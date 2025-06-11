@@ -148,13 +148,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ roomId }) => {
     }
   };
 
-  const handleClearAllFiles = () => {
-    setSelectedFiles([]);
-    setUploadProgress({});
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   const openFileDialog = () => {
     fileInputRef.current?.click();

@@ -62,7 +62,7 @@ git commit -m "Initial commit: FastTransfer 檔案傳輸網站"
 1. 前往 [GitHub](https://github.com) 並登入
 2. 點擊右上角 "+" → "New repository"
 3. 填寫：
-   - Repository name: `fastransfer`
+   - Repository name: `FastTransfer`
    - Description: `快速檔案傳輸網站`
    - 選擇 Public 或 Private
 4. **不要勾選** "Add a README file"
@@ -71,7 +71,7 @@ git commit -m "Initial commit: FastTransfer 檔案傳輸網站"
 #### 3. 推送代碼到 GitHub
 ```bash
 # 添加遠程倉庫（替換 YOUR_USERNAME 為您的 GitHub 用戶名）
-git remote add origin https://github.com/YOUR_USERNAME/fastransfer.git
+git remote add origin https://github.com/YOUR_USERNAME/FastTransfer.git
 git branch -M main
 git push -u origin main
 ```
