@@ -7,7 +7,7 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://your-backend-server.herokuapp.com/api/:splat"
+  to = "https://fastransfer-backend.onrender.com/api/:splat"
   status = 200
   force = true
 
