@@ -16,5 +16,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets'
+  },
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify(
+      process.env.VITE_API_URL || 'https://fastransfer-backend.onrender.com'
+    )
   }
 })
