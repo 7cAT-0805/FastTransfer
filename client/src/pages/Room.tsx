@@ -22,9 +22,9 @@ const Room: React.FC = () => {
   
   const [isHost, setIsHost] = useState(false);
   const [files, setFiles] = useState<FileInfo[]>([]);
-  const [participants, setParticipants] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [participants, setParticipants] = useState(0);  const [loading, setLoading] = useState(true);
   const [roomUrl, setRoomUrl] = useState('');
+  const [connectionStatus, setConnectionStatus] = useState('connecting');
 
   useEffect(() => {
     if (!roomId) {
@@ -59,6 +59,7 @@ const Room: React.FC = () => {
         // 設置房間URL
         setRoomUrl(generateRoomUrl(roomId));        // 連接 Socket.IO 並等待連接完成
         console.log('🔌 Connecting to Socket.IO with hostId:', hostId);
+        setConnectionStatus('connecting');
         const socket = socketService.connect(hostId ? { hostId } : undefined);
 
         // 等待 Socket 連接
@@ -66,11 +67,16 @@ const Room: React.FC = () => {
           return new Promise<void>((resolve) => {
             if (socket.connected) {
               console.log('✅ Socket already connected');
+              setConnectionStatus('connected');
               resolve();
             } else {
               socket.on('connect', () => {
                 console.log('✅ Socket connected successfully');
+                setConnectionStatus('connected');
                 resolve();
+              });
+              socket.on('connect_error', () => {
+                setConnectionStatus('error');
               });
             }
           });
@@ -164,13 +170,18 @@ const Room: React.FC = () => {
     } else {
       toast.error('複製失敗，請手動複製');
     }  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">正在載入房間...</p>
+          <p className="text-gray-600 mb-2">正在載入房間...</p>
+          {connectionStatus === 'connecting' && (
+            <p className="text-sm text-yellow-600">正在連接服務器，請稍候...</p>
+          )}
+          {connectionStatus === 'error' && (
+            <p className="text-sm text-orange-600">服務器正在啟動中，請稍等片刻...</p>
+          )}
         </div>
       </div>
     );

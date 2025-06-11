@@ -15,24 +15,34 @@ class SocketService {
     // 強制使用 Render 後端 URL
     const serverUrl = 'https://fastransfer-backend.onrender.com';
     console.log('🔌 Socket connecting to:', serverUrl);
-    
-    this.socket = io(serverUrl, {
+      this.socket = io(serverUrl, {
       transports: ['websocket', 'polling'],
       autoConnect: true,
-      timeout: 20000,
+      timeout: 30000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
       auth: auth || {}
     });
       this.socket.on('connect', () => {
-      console.log('Socket連接成功');
+      console.log('✅ Socket連接成功');
     });
     
     this.socket.on('disconnect', (reason) => {
       this.currentRoomId = null;
-      console.log('Socket連接斷開:', reason);
+      console.log('🔌 Socket連接斷開:', reason);
     });
     
     this.socket.on('connect_error', (error) => {
-      console.error('Socket連接錯誤:', error);
+      console.error('❌ Socket連接錯誤 (server might be sleeping):', error);
+    });
+    
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Socket重新連接成功，嘗試次數:', attemptNumber);
+    });
+    
+    this.socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('🔄 Socket重新連接嘗試:', attemptNumber);
     });
     
     return this.socket;

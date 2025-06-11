@@ -30,7 +30,17 @@ api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
+    console.error('🚨 API Error:', error);
+    
+    // 如果是連接錯誤，Render 可能在休眠，嘗試重試
+    if ((error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') && !error.config._retry) {
+      error.config._retry = true;
+      console.log('🔄 Server might be sleeping, retrying in 5 seconds...');
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      return api.request(error.config);
+    }
+    
     if (error.response?.data?.error) {
       throw new Error(error.response.data.error);
     }
