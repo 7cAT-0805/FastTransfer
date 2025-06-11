@@ -225,9 +225,10 @@ io.on('connection', (socket) => {
   console.log('用戶連接:', socket.id);
   let currentRoomId = null;
   let isHost = false;
-  
-  socket.on('joinRoom', (roomId) => {
+    socket.on('joinRoom', (roomId) => {
     roomId = roomId.toUpperCase();
+    console.log(`👤 User ${socket.id} attempting to join room ${roomId}`);
+    
     if (rooms.has(roomId)) {
       // 如果用戶已經在其他房間，先離開
       if (currentRoomId && currentRoomId !== roomId) {
@@ -243,6 +244,8 @@ io.on('connection', (socket) => {
       const room = rooms.get(roomId);
       const hostId = socket.handshake.auth?.hostId;
       isHost = room.hostId === hostId;
+      
+      console.log(`🔐 Host check: ${hostId} === ${room.hostId} ? ${isHost}`);
       
       // 只有新加入才增加人數
       const isNewJoin = currentRoomId !== roomId;
@@ -262,8 +265,9 @@ io.on('connection', (socket) => {
       });
       
       io.to(roomId).emit('participantCountUpdate', room.participants);
-      console.log(`用戶 ${socket.id} 加入房間 ${roomId}，當前人數: ${room.participants}${isHost ? ' (房主)' : ''}`);
+      console.log(`✅ User ${socket.id} joined room ${roomId}, participants: ${room.participants}${isHost ? ' (Host)' : ' (Guest)'}`);
     } else {
+      console.log(`❌ Room ${roomId} does not exist`);
       socket.emit('error', { message: '房間不存在' });
     }
   });

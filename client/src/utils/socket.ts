@@ -53,15 +53,19 @@ class SocketService {
   isSocketConnected(): boolean {
     return this.socket?.connected === true;
   }
-  
-  joinRoom(roomId: string): void {
+    joinRoom(roomId: string): void {
     if (this.socket && this.isSocketConnected()) {
+      console.log('🚪 Attempting to join room:', roomId);
       // 避免重複加入同一個房間
       if (this.currentRoomId !== roomId) {
         this.currentRoomId = roomId;
         this.socket.emit('joinRoom', roomId);
-        console.log('加入房間:', roomId);
+        console.log('✅ Room join request sent:', roomId);
+      } else {
+        console.log('⚠️ Already in room:', roomId);
       }
+    } else {
+      console.error('❌ Socket not connected, cannot join room');
     }
   }
   

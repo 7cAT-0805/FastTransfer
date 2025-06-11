@@ -33,19 +33,50 @@ const Room: React.FC = () => {
     }
 
     const initRoom = async () => {
-      try {
-        // 檢查是否為房主
+      try {        // 檢查是否為房主
         const hostId = localStorage.getItem(`room_${roomId}_host`);
+        console.log('🏠 Host ID from localStorage:', hostId);
+        
         if (hostId) {
           const response = await api.post(`/rooms/${roomId}/verify-host`, { hostId });
           setIsHost(response.data.isHost);
-        }        // 獲取房間檔案列表
+          console.log('✅ Is Host:', response.data.isHost);
+        } else {
+          // 如果不是房主，嘗試加入房間
+          try {
+            const joinResponse = await api.post(`/rooms/${roomId}/join`);
+            console.log('👥 Joined as guest:', joinResponse.data);
+          } catch (error) {
+            console.error('❌ Failed to join room:', error);
+            toast.error('房間不存在或已關閉');
+            navigate('/');
+            return;
+          }
+        }// 獲取房間檔案列表
         const filesResponse = await api.get(`/rooms/${roomId}/files`);
         setFiles(filesResponse.data.files);
 
         // 設置房間URL
         setRoomUrl(generateRoomUrl(roomId));        // 連接 Socket.IO 並等待連接完成
+        console.log('🔌 Connecting to Socket.IO with hostId:', hostId);
         const socket = socketService.connect(hostId ? { hostId } : undefined);
+
+        // 等待 Socket 連接
+        const waitForConnection = () => {
+          return new Promise<void>((resolve) => {
+            if (socket.connected) {
+              console.log('✅ Socket already connected');
+              resolve();
+            } else {
+              socket.on('connect', () => {
+                console.log('✅ Socket connected successfully');
+                resolve();
+              });
+            }
+          });
+        };
+
+        await waitForConnection();
 
         // 定義事件處理器
         const handleFileUploaded = (fileInfo: FileInfo) => {
@@ -84,9 +115,7 @@ const Room: React.FC = () => {
           console.log('房間已關閉:', data);
           toast.error(data.message || '房間已關閉');
           navigate('/');
-        };
-
-        // 清除之前的監聽器（如果存在）
+        };        // 清除之前的監聽器（如果存在）
         socketService.removeAllListeners();
 
         // 監聽事件
@@ -96,15 +125,9 @@ const Room: React.FC = () => {
         socketService.onError(handleError);
         socketService.onRoomClosed(handleRoomClosed);
 
-        // 等待Socket連接後再加入房間
-        if (socket.connected) {
-          socketService.joinRoom(roomId);
-        } else {
-          socket.on('connect', () => {
-            console.log('Socket已連接，加入房間:', roomId);
-            socketService.joinRoom(roomId);
-          });
-        }
+        // 加入房間
+        console.log('🚪 Joining room:', roomId);
+        socketService.joinRoom(roomId);
 
       } catch (error) {
         toast.error(error instanceof Error ? error.message : '無法加入房間');
