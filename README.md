@@ -76,7 +76,7 @@ git branch -M main
 git push -u origin main
 ```
 
-### 🌐 部署到 Netlify
+### 🌐 前端部署到 Netlify
 
 #### 1. 連接 GitHub
 1. 前往 [Netlify](https://netlify.com) 並登入
@@ -92,11 +92,31 @@ git push -u origin main
 #### 3. 環境變數設定
 在 Netlify 的 Site settings → Environment variables 中添加：
 ```
-VITE_API_URL=https://your-backend-url.herokuapp.com
+VITE_API_URL=https://your-backend-url.railway.app
 ```
 
 #### 4. 完成部署
 點擊 "Deploy site"，幾分鐘後您的網站就會上線！
+
+### 🚂 後端部署到 Railway
+
+#### 1. 快速部署
+1. 前往 [Railway](https://railway.app) 並用 GitHub 登入
+2. 點擊 "New Project" → "Deploy from GitHub repo"
+3. 選擇您的 `FastTransfer` 倉庫
+4. 設定服務配置：
+   - **Root Directory**: `server`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+
+#### 2. 環境變數設定
+```
+NODE_ENV=production
+CORS_ORIGIN=https://fasttransfer.netlify.app
+```
+
+#### 3. 取得 API URL
+部署完成後複製 Railway 提供的 URL，然後在 Netlify 設定環境變數 `VITE_API_URL`
 
 ### 🔄 日常更新
 每次修改代碼後，只需執行：
