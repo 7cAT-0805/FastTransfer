@@ -19,7 +19,7 @@ export default defineConfig({
   },
   define: {
     'import.meta.env.VITE_API_URL': JSON.stringify(
-      process.env.VITE_API_URL || 'https://fastransfer-backend.onrender.com'
+      'https://fastransfer-backend.onrender.com'
     )
   }
 })

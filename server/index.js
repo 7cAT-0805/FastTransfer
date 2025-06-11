@@ -14,17 +14,22 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
 const PORT = process.env.PORT || 3001;
 
+// 信任 proxy（用於 Render 等雲端服務）
+app.set('trust proxy', 1);
+
 // 中間件
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173"
+  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  credentials: true
 }));
 app.use(express.json());
 
