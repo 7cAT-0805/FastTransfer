@@ -15,6 +15,7 @@ import { FileInfo } from '../types';
 import { copyToClipboard, generateRoomUrl } from '../utils/helpers';
 import FileUploader from '../components/FileUploader';
 import FileList from '../components/FileList';
+import QRCodeGenerator from '../components/QRCodeGenerator';
 
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -245,11 +246,15 @@ const Room: React.FC = () => {
                   <li>檔案會在房間關閉時立即刪除</li>
                 </ul>
               </div>
-            </div>
-          </div>
+            </div>          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">          {/* 檔案上傳區 (僅房主可見) */}
+        {/* QR Code 區域 */}
+        <div className="mb-8">
+          <QRCodeGenerator roomUrl={roomUrl} roomId={roomId!} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">{/* 檔案上傳區 (僅房主可見) */}
           {isHost && (
             <div className="lg:col-span-1">
               <FileUploader 

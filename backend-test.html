@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastTransfer Backend Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 FastTransfer Backend 連接測試</h1>
+        
+        <div id="status"></div>
+        
+        <button onclick="testHealth()">測試健康檢查</button>
+        <button onclick="testCreateRoom()">測試創建房間</button>
+        <button onclick="testSocket()">測試 Socket.IO</button>
+        <button onclick="runAllTests()">執行所有測試</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const API_BASE = 'https://fastransfer-backend.onrender.com';
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        function addResult(title, result, success = true) {
+            const resultsDiv = document.getElementById('results');
+            const resultClass = success ? 'success' : 'error';
+            resultsDiv.innerHTML += `
+                <h3>${title}</h3>
+                <div class="${resultClass}">
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        async function testHealth() {
+            updateStatus('🔍 測試健康檢查...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                addResult('✅ 健康檢查', data, true);
+                updateStatus('✅ 後端服務正常運行！', 'success');
+            } catch (error) {
+                addResult('❌ 健康檢查失敗', error.message, false);
+                updateStatus('❌ 後端服務無法訪問', 'error');
+            }
+        }
+        
+        async function testCreateRoom() {
+            updateStatus('🏠 測試創建房間...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/rooms`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                addResult('✅ 房間創建', data, true);
+                updateStatus('✅ 房間創建功能正常！', 'success');
+                return data;
+            } catch (error) {
+                addResult('❌ 房間創建失敗', error.message, false);
+                updateStatus('❌ 房間創建功能異常', 'error');
+            }
+        }
+        
+        function testSocket() {
+            updateStatus('🔌 測試 Socket.IO 連接...', 'info');
+            
+            const socket = io(API_BASE, {
+                transports: ['websocket', 'polling'],
+                timeout: 10000
+            });
+            
+            socket.on('connect', () => {
+                addResult('✅ Socket.IO 連接', { 
+                    status: 'connected', 
+                    socketId: socket.id,
+                    transport: socket.io.engine.transport.name
+                }, true);
+                updateStatus('✅ Socket.IO 連接成功！', 'success');
+                socket.disconnect();
+            });
+            
+            socket.on('connect_error', (error) => {
+                addResult('❌ Socket.IO 連接失敗', error.message, false);
+                updateStatus('❌ Socket.IO 無法連接', 'error');
+            });
+        }
+        
+        async function runAllTests() {
+            updateStatus('🚀 執行完整測試...', 'info');
+            document.getElementById('results').innerHTML = '';
+            
+            await testHealth();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testCreateRoom();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            testSocket();
+        }
+        
+        // 頁面載入時自動執行測試
+        window.onload = () => {
+            updateStatus('📋 準備測試後端連接...', 'info');
+        };
+    </script>
+</body>
+</html>
