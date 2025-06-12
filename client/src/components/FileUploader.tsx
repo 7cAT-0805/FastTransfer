@@ -67,17 +67,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ roomId }) => {
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
 
-    // 防止重複上傳
-    if (isUploading) return;
+    // 防止重複上傳    if (isUploading) return;
 
     setIsUploading(true);
-    const hostId = localStorage.getItem(`room_${roomId}_host`);
-    
-    if (!hostId) {
-      toast.error('無法驗證房主身份');
-      setIsUploading(false);
-      return;
-    }
 
     let successCount = 0;
     let errorCount = 0;
@@ -89,8 +81,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ roomId }) => {
         
         try {
           const formData = new FormData();
-          formData.append('file', file);
-          formData.append('hostId', hostId);          await apiWrapper.post(`/rooms/${roomId}/upload`, formData, {
+          formData.append('file', file);await apiWrapper.post(`/rooms/${roomId}/upload`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },

@@ -157,20 +157,15 @@ app.post('/api/rooms/:roomId/verify-host', (req, res) => {
   res.json({ isHost });
 });
 
-// 檔案上傳 (僅房主)
+// 檔案上傳 (所有房間成員皆可上傳)
 app.post('/api/rooms/:roomId/upload', upload.single('file'), (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
-  const { hostId } = req.body;
   
   if (!rooms.has(roomId)) {
     return res.status(404).json({ error: '房間不存在' });
   }
   
-  const room = rooms.get(roomId);
-  if (room.hostId !== hostId) {
-    return res.status(403).json({ error: '只有房主可以上傳檔案' });
-  }
-    if (!req.file) {
+  if (!req.file) {
     return res.status(400).json({ error: '沒有檔案被上傳' });
   }
   
