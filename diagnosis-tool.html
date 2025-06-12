@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastTransfer 實時診斷工具</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #333; 
+            text-align: center; 
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .test-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 15px; 
+            border-radius: 8px; 
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+        }
+        .loading { 
+            background: #d1ecf1; 
+            color: #0c5460; 
+            border: 1px solid #bee5eb; 
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 5px; 
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        button:hover { 
+            background: #0056b3; 
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: #28a745; }
+        .status-offline { background: #dc3545; }
+        .status-unknown { background: #ffc107; }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        #fix-suggestions {
+            background: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 FastTransfer 實時診斷工具</h1>
+        
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>🌐 後端服務狀態</h3>
+                <div id="backend-status">
+                    <div><span class="status-indicator status-unknown"></span>Railway: 檢測中...</div>
+                    <div><span class="status-indicator status-unknown"></span>Render: 檢測中...</div>
+                </div>
+            </div>
+            
+            <div class="test-card">
+                <h3>🔗 網路連接測試</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress"></div>
+                </div>
+                <div id="network-status">準備中...</div>
+            </div>
+            
+            <div class="test-card">
+                <h3>⚙️ 前端配置檢查</h3>
+                <div id="frontend-config">檢查中...</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="runFullDiagnosis()" id="diagnose-btn">🚀 開始完整診斷</button>
+            <button onclick="testCreateRoom()" id="room-test-btn">🏠 測試房間創建</button>
+            <button onclick="clearResults()">🗑️ 清除結果</button>
+        </div>
+        
+        <div id="results"></div>
+        <div id="fix-suggestions" style="display: none;"></div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        const backendStatus = document.getElementById('backend-status');
+        const networkStatus = document.getElementById('network-status');
+        const frontendConfig = document.getElementById('frontend-config');
+        const fixSuggestions = document.getElementById('fix-suggestions');
+        const progress = document.getElementById('progress');
+        
+        let testProgress = 0;
+        
+        const backends = {
+            railway: 'https://fasttransfer-production.up.railway.app',
+            render: 'https://fastransfer-backend.onrender.com'
+        };
+        
+        function updateProgress(percent) {
+            testProgress = percent;
+            progress.style.width = percent + '%';
+        }
+        
+        function addResult(message, type = 'loading') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function updateBackendStatus(backend, status) {
+            const indicators = backendStatus.querySelectorAll('.status-indicator');
+            const index = backend === 'railway' ? 0 : 1;
+            const indicator = indicators[index];
+            const div = indicator.parentElement;
+            
+            indicator.className = `status-indicator status-${status}`;
+            div.innerHTML = `<span class="status-indicator status-${status}"></span>${backend.toUpperCase()}: ${
+                status === 'online' ? '✅ 正常運行' : 
+                status === 'offline' ? '❌ 離線' : '⚠️ 未知'
+            }`;
+        }
+        
+        async function testBackend(name, url) {
+            try {
+                addResult(`🔄 測試 ${name}: ${url}`, 'loading');
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch(`${url}/api/health`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ ${name} 健康檢查通過: ${JSON.stringify(data)}`, 'success');
+                    updateBackendStatus(name.toLowerCase(), 'online');
+                    return { success: true, data };
+                } else {
+                    addResult(`❌ ${name} 健康檢查失敗: HTTP ${response.status}`, 'error');
+                    updateBackendStatus(name.toLowerCase(), 'offline');
+                    return { success: false, status: response.status };
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    addResult(`⏰ ${name} 連接超時 (>10秒)`, 'error');
+                } else {
+                    addResult(`❌ ${name} 連接失敗: ${error.message}`, 'error');
+                }
+                updateBackendStatus(name.toLowerCase(), 'offline');
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testCreateRoom() {
+            const btn = document.getElementById('room-test-btn');
+            btn.disabled = true;
+            
+            try {
+                addResult('🏠 測試房間創建功能...', 'loading');
+                
+                const response = await fetch(`${backends.railway}/api/rooms/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ 房間創建成功! 房間代碼: ${data.roomId}`, 'success');
+                    addResult(`🔗 房間連結: ${window.location.origin}/room/${data.roomId}`, 'success');
+                } else {
+                    const errorData = await response.text();
+                    addResult(`❌ 房間創建失敗: ${response.status} - ${errorData}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ 房間創建錯誤: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        
+        function checkFrontendConfig() {
+            const config = {
+                userAgent: navigator.userAgent,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                language: navigator.language,
+                platform: navigator.platform,
+                localStorage: typeof(Storage) !== "undefined"
+            };
+            
+            frontendConfig.innerHTML = `
+                <div>🌐 在線狀態: ${config.onLine ? '✅' : '❌'}</div>
+                <div>🍪 Cookie: ${config.cookieEnabled ? '✅' : '❌'}</div>
+                <div>💾 本地存儲: ${config.localStorage ? '✅' : '❌'}</div>
+                <div>🌍 語言: ${config.language}</div>
+                <div>💻 平台: ${config.platform}</div>
+            `;
+            
+            if (!config.onLine) {
+                addResult('⚠️ 檢測到離線狀態，請檢查網路連接', 'warning');
+            }
+            
+            if (!config.cookieEnabled) {
+                addResult('⚠️ Cookie 被禁用，可能影響功能', 'warning');
+            }
+        }
+        
+        function generateFixSuggestions(railwayStatus, renderStatus) {
+            const suggestions = [];
+            
+            if (!railwayStatus.success && !renderStatus.success) {
+                suggestions.push(`
+                    <h3>🔴 嚴重：所有後端服務都無法連接</h3>
+                    <ul>
+                        <li>檢查網路連接是否正常</li>
+                        <li>嘗試使用不同的網路環境（如手機熱點）</li>
+                        <li>檢查防火牆或代理設置</li>
+                        <li>聯繫管理員確認服務狀態</li>
+                    </ul>
+                `);
+            } else if (!railwayStatus.success) {
+                suggestions.push(`
+                    <h3>🟡 Railway 服務異常</h3>
+                    <ul>
+                        <li>Railway 服務可能暫時維護中</li>
+                        <li>等待 5-10 分鐘後重試</li>
+                        <li>或切換到 Render 後端</li>
+                    </ul>
+                `);
+            } else {
+                suggestions.push(`
+                    <h3>🟢 診斷完成：服務正常</h3>
+                    <p>如果仍無法使用，請：</p>
+                    <ul>
+                        <li>清除瀏覽器快取並重新整理</li>
+                        <li>嘗試無痕模式</li>
+                        <li>檢查瀏覽器控制台是否有錯誤訊息</li>
+                    </ul>
+                `);
+            }
+            
+            if (suggestions.length > 0) {
+                fixSuggestions.innerHTML = suggestions.join('');
+                fixSuggestions.style.display = 'block';
+            }
+        }
+        
+        async function runFullDiagnosis() {
+            const btn = document.getElementById('diagnose-btn');
+            btn.disabled = true;
+            clearResults();
+            
+            addResult('🚀 開始完整診斷...', 'loading');
+            updateProgress(10);
+            
+            // 檢查前端配置
+            checkFrontendConfig();
+            updateProgress(25);
+            
+            // 測試後端服務
+            const railwayResult = await testBackend('Railway', backends.railway);
+            updateProgress(50);
+            
+            const renderResult = await testBackend('Render', backends.render);
+            updateProgress(75);
+            
+            // 網路狀態檢查
+            networkStatus.innerHTML = navigator.onLine ? 
+                '✅ 網路連接正常' : 
+                '❌ 檢測到離線狀態';
+            
+            updateProgress(90);
+            
+            // 生成修復建議
+            generateFixSuggestions(railwayResult, renderResult);
+            
+            updateProgress(100);
+            addResult('✅ 診斷完成！請查看上方的修復建議。', 'success');
+            
+            btn.disabled = false;
+        }
+        
+        function clearResults() {
+            results.innerHTML = '';
+            fixSuggestions.style.display = 'none';
+            updateProgress(0);
+        }
+        
+        // 頁面載入時自動運行基本檢查
+        window.addEventListener('load', () => {
+            checkFrontendConfig();
+            // 簡單檢查 Railway 狀態
+            testBackend('Railway', backends.railway);
+        });
+    </script>
+</body>
+</html>
