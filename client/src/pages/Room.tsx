@@ -6,7 +6,6 @@ import {
   Users, 
   FileText, 
   AlertCircle,
-  CheckCircle2,
   QrCode,
   X
 } from 'lucide-react';
@@ -14,18 +13,18 @@ import apiWrapper from '../utils/api';
 import socketService from '../utils/socket';
 import { FileInfo, ShareMessage } from '../types';
 import { copyToClipboard, generateRoomUrl } from '../utils/helpers';
-import FileUploader from '../components/FileUploader';
 import FileList from '../components/FileList';
 import QRCodeGenerator from '../components/QRCodeGenerator';
-import MessageList from '../components/MessageList';
-
-// 直接重新導入 QuickShare
-import QuickShare from '../components/QuickShare';
+import ShareAndUpload from '../components/ShareAndUpload';
+import { NetworkError, useErrorHandler } from '../components/ErrorDisplay';
+import { DeveloperMode } from '../utils/developerMode';
 
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-    const [isHost, setIsHost] = useState(false);
+  const { error: networkError, handleError: handleNetworkError, clearError: clearNetworkError } = useErrorHandler();
+  
+  const [isHost, setIsHost] = useState(false);
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [participants, setParticipants] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -33,11 +32,19 @@ const Room: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const [showQRCode, setShowQRCode] = useState(false);
   const [messages, setMessages] = useState<ShareMessage[]>([]);
-
   useEffect(() => {
     if (!roomId) {
       navigate('/');
       return;
+    }
+
+    // 初始化開發者模式
+    const devMode = DeveloperMode.getInstance();
+    
+    // 如果是開發者模式，從開發者模式獲取角色
+    if (devMode.isEnabled()) {
+      setIsHost(devMode.getRole());
+      console.log('🛠️ 開發者模式已啟用，角色:', devMode.getRole() ? '房主' : '訪客');
     }
 
     const initRoom = async () => {
@@ -89,25 +96,18 @@ const Room: React.FC = () => {
           });
         };
 
-        await waitForConnection();
-
-        // 定義事件處理器
+        await waitForConnection();        // 定義事件處理器
         const handleFileUploaded = (fileInfo: FileInfo) => {
-          console.log('收到檔案上傳事件:', fileInfo);
           setFiles(prev => {
-            // 避免重複添加同一個檔案
-            const exists = prev.find(f => f.id === fileInfo.id);
-            if (exists) {
-              console.log('檔案已存在，跳過添加:', fileInfo.id);
-              return prev;
-            }
-            console.log('添加新檔案到列表:', fileInfo.id);
-            return [...prev, fileInfo];
+            // 多重條件去重
+            const exists = prev.find(f =>
+              f.id === fileInfo.id ||
+              f.filename === fileInfo.filename ||
+              (f.originalName === fileInfo.originalName && f.size === fileInfo.size)
+            );
+            if (exists) return prev;
+            return [fileInfo, ...prev];
           });
-          // 顯示上傳通知（只對非房主顯示，避免房主看到重複通知）
-          if (!isHost) {
-            toast.success(`新檔案已上傳: ${fileInfo.originalName}`);
-          }
         };
 
         const handleParticipantCountUpdate = (count: number) => {
@@ -120,8 +120,16 @@ const Room: React.FC = () => {
           setFiles(data.files || []);
         };        const handleError = (error: any) => {
           console.error('Socket錯誤:', error);
-          toast.error(error.message || '房間連接失敗');
-          navigate('/');
+          const errorMessage = error.message || '房間連接失敗';
+          
+          // 檢查是否為網路錯誤
+          if (errorMessage.includes('Network') || errorMessage.includes('連線') || errorMessage.includes('網路')) {
+            handleNetworkError(errorMessage);
+          } else {
+            toast.error(errorMessage);
+          }
+          
+          setConnectionStatus('error');
         };
 
         const handleRoomClosed = (data: any) => {
@@ -148,9 +156,53 @@ const Room: React.FC = () => {
       } finally {
         setLoading(false);
       }
+    };    initRoom();
+
+    // 開發者模式事件監聽器
+    const handleDevModeRoleChanged = (event: CustomEvent) => {
+      console.log('🛠️ 開發者模式角色變更:', event.detail);
+      setIsHost(event.detail.isHost);
+      
+      // 顯示角色切換提示
+      const roleText = event.detail.isHost ? '房主' : '訪客';
+      toast.success(`開發者模式: 已切換為${roleText}視角`, {
+        icon: event.detail.isHost ? '👑' : '👥',
+        duration: 3000,
+      });
     };
 
-    initRoom();    // 清理函數
+    const handleDevModeDataCleared = () => {
+      console.log('🛠️ 開發者模式數據已清空');
+      setFiles([]);
+      setMessages([]);
+      toast.success('開發者模式: 測試數據已清空', {
+        icon: '🗑️',
+      });
+    };
+
+    const handleDevModeFileAdded = (event: CustomEvent) => {
+      console.log('🛠️ 開發者模式添加檔案:', event.detail.file);
+      setFiles(prev => [...prev, event.detail.file]);
+      toast.success(`開發者模式: 已添加 ${event.detail.file.originalName}`, {
+        icon: '📁',
+      });
+    };
+
+    const handleDevModeMessageAdded = (event: CustomEvent) => {
+      console.log('🛠️ 開發者模式添加訊息:', event.detail.message);
+      setMessages(prev => [...prev, event.detail.message]);
+      toast.success('開發者模式: 已添加測試訊息', {
+        icon: '💬',
+      });
+    };
+
+    // 添加事件監聽器
+    window.addEventListener('devModeRoleChanged', handleDevModeRoleChanged as EventListener);
+    window.addEventListener('devModeDataCleared', handleDevModeDataCleared as EventListener);
+    window.addEventListener('devModeFileAdded', handleDevModeFileAdded as EventListener);
+    window.addEventListener('devModeMessageAdded', handleDevModeMessageAdded as EventListener);
+
+    // 清理函數
     return () => {
       socketService.off('fileUploaded');
       socketService.off('participantCountUpdate');
@@ -158,6 +210,12 @@ const Room: React.FC = () => {
       socketService.off('error');
       socketService.off('roomClosed');
       socketService.disconnect();
+      
+      // 移除開發者模式事件監聽器
+      window.removeEventListener('devModeRoleChanged', handleDevModeRoleChanged as EventListener);
+      window.removeEventListener('devModeDataCleared', handleDevModeDataCleared as EventListener);
+      window.removeEventListener('devModeFileAdded', handleDevModeFileAdded as EventListener);
+      window.removeEventListener('devModeMessageAdded', handleDevModeMessageAdded as EventListener);
     };
   }, [roomId, navigate]);
   // 處理分享訊息
@@ -179,6 +237,44 @@ const Room: React.FC = () => {
     } else {
       toast.error('複製失敗，請手動複製');
     }  };
+  // 重試加入房間的函數
+  const retryJoinRoom = async () => {
+    if (!roomId) return;
+    
+    clearNetworkError();
+    setLoading(true);
+    setConnectionStatus('connecting');
+    
+    try {
+      console.log('🔄 重試加入房間:', roomId);
+      socketService.joinRoom(roomId);
+      
+      // 等待連接結果
+      setTimeout(() => {
+        if (connectionStatus === 'connecting') {
+          setConnectionStatus('connected');
+        }
+      }, 3000);
+    } catch (error) {
+      console.error('重試失敗:', error);
+      handleNetworkError(error instanceof Error ? error.message : '重試失敗');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 重新獲取房間檔案列表的函數
+  const fetchRoomFiles = async () => {
+    try {
+      console.log('🔄 重新獲取檔案列表...');
+      const filesResponse = await apiWrapper.get(`/rooms/${roomId}/files`);
+      console.log('✅ 獲取到檔案列表:', filesResponse.data.files);
+      setFiles(filesResponse.data.files);
+    } catch (error) {
+      console.error('❌ 獲取檔案列表失敗:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -202,14 +298,16 @@ const Room: React.FC = () => {
         {/* 房間資訊 */}
         <div className="card mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div className="mb-4 md:mb-0">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                房間: {roomId}
+            <div className="mb-4 md:mb-0">              <h1 className="text-3xl font-bold text-gray-900 mb-3 text-content">
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  房間 {roomId}
+                </span>
                 {isHost && (
-                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                  <div className="inline-flex items-center ml-4 px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-white shadow-lg shadow-amber-500/30 animate-pulse">
+                    <div className="w-2 h-2 bg-white rounded-full mr-2 animate-ping"></div>
+                    <span className="mr-1">👑</span>
                     房主
-                  </span>
+                  </div>
                 )}
               </h1>
               <div className="flex items-center space-x-4 text-sm text-gray-600">
@@ -239,48 +337,71 @@ const Room: React.FC = () => {
                 分享 QR Code
               </button>
             </div>
-          </div>
-          
-          {/* 房間說明 */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          </div>          {/* 房間說明 */}
+          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-200/50 shadow-sm">
             <div className="flex">
-              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
-              <div className="text-sm text-blue-800">
-                <p className="font-medium mb-1">房間使用說明：</p>                <ul className="space-y-1 list-disc list-inside">
-                  <li>只有房主可以上傳檔案</li>
-                  <li>所有成員都可以下載檔案</li>
-                  <li>房主離開時房間會立即關閉</li>
-                  <li>檔案會在房間關閉時立即刪除</li>
+              <AlertCircle className="w-6 h-6 text-blue-600 mt-0.5 mr-4 flex-shrink-0" />
+              <div className="text-blue-800">
+                <h3 className="text-lg font-bold mb-3 text-gray-900">房間使用說明</h3>
+                <ul className="space-y-2 list-none text-content">
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                    <span className="text-gray-700">所有成員都可以上傳和下載檔案，享受無限制的檔案分享體驗</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                    <span className="text-gray-700">所有成員都可以發送快速分享，包括文字、網址、剪貼簿和語音訊息</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-amber-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                    <span className="text-gray-700">房主離開時房間會立即關閉，請確保重要檔案已下載完成</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                    <span className="text-gray-700">檔案會在房間關閉時立即刪除，無法恢復，請及時保存</span>
+                  </li>
                 </ul>
               </div>
-            </div>          </div>        </div>
+            </div>
+          </div></div>        {/* 網路錯誤顯示 */}
+        {networkError && (
+          <div className="mb-6">
+            <NetworkError
+              error={networkError}
+              onRetry={retryJoinRoom}
+              onDismiss={clearNetworkError}
+              title="連線問題"
+            />
+          </div>
+        )}
 
-        {/* 主內容區域 - 新布局 */}        <div className="flex flex-col xl:flex-row gap-8">
-          
-          {/* 左側：檔案上傳和快速分享 (房主) 或 快速分享 (訪客) */}
-          <div className="xl:w-1/4 space-y-6">
-            {isHost && (
-              <FileUploader 
-                roomId={roomId!}
-              />
-            )}
-            <QuickShare 
+        {/* 主內容區域 - 簡化布局 */}
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* 左側：統一的上傳和分享區域 */}
+          <div className="lg:w-1/3">            <ShareAndUpload 
               roomId={roomId!}
               onMessageSent={handleMessageSent}
+              onFileUploaded={(file) => {
+                setFiles(prev => {
+                  const exists = prev.find(f =>
+                    f.id === file.id ||
+                    f.filename === file.filename ||
+                    (f.originalName === file.originalName && f.size === file.size)
+                  );
+                  if (exists) return prev;
+                  return [file, ...prev];
+                });
+              }}
             />
           </div>
 
-          {/* 中間：檔案列表 */}
-          <div className="xl:w-2/4">
+          {/* 右側：檔案和內容列表 */}
+          <div className="lg:w-2/3">
             <FileList 
               files={files} 
+              messages={messages}
               roomId={roomId!}
             />
-          </div>
-
-          {/* 右側：分享訊息 */}
-          <div className="xl:w-1/4">
-            <MessageList messages={messages} />
           </div>
         </div>
         {/* QR Code 模態對話框 */}

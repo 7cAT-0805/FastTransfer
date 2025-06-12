@@ -5,10 +5,11 @@ import { ShareMessage } from '../types';
 
 interface QuickShareProps {
   roomId: string;
+  isHost?: boolean;
   onMessageSent: (message: ShareMessage) => void;
 }
 
-const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
+const QuickShare: React.FC<QuickShareProps> = ({ roomId, isHost = false, onMessageSent }) => {
   const [activeTab, setActiveTab] = useState<'text' | 'url' | 'clipboard' | 'voice'>('text');
   const [textInput, setTextInput] = useState('');
   const [urlInput, setUrlInput] = useState('');
@@ -129,9 +130,7 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
     { id: 'clipboard', label: '剪貼簿', icon: Clipboard },
     { id: 'voice', label: '語音', icon: Mic }
   ];  return (
-    <div className="card flex flex-col">
-      <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gradient-text">
-        <Sparkles className="w-6 h-6 mr-3" />
+    <div className="card flex flex-col">      <h2 className="text-xl md:text-2xl font-bold mb-6 text-left">
         快速分享
       </h2>
       

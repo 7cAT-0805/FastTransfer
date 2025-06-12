@@ -13,109 +13,65 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     line-height: 1.6;
     letter-spacing: -0.025em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     letter-spacing: -0.025em;
     line-height: 1.2;
+    color: #111827;
   }
 
   h1 {
     font-size: 2.25rem; /* 36px */
     margin-bottom: 1rem;
+    font-weight: 800;
   }
 
   h2 {
     font-size: 1.875rem; /* 30px */
     margin-bottom: 0.75rem;
+    font-weight: 700;
   }
 
   h3 {
     font-size: 1.5rem; /* 24px */
     margin-bottom: 0.5rem;
+    font-weight: 600;
   }
 
   p {
     margin-bottom: 1rem;
     line-height: 1.7;
+    color: #374151;
   }
+
+  /* 改善小文字的可讀性 */
+  .text-sm {
+    line-height: 1.6;
+  }
+
   /* 改善文字可讀性 */
   .text-content {
     line-height: 1.8;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }  /* 全螢幕預覽模式 */
-  .fullscreen-preview {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 2147483647 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    outline: none !important;
   }
 
-  /* 防止預覽時頁面滾動 */
-  body.preview-active {
-    overflow: hidden !important;
+  /* 優化按鈕文字 */
+  button {
+    font-weight: 500;
+    letter-spacing: -0.01em;
   }
 
-  html.preview-active {
-    overflow: hidden !important;
-  }
-
-  /* 預覽動畫效果 */
-  @keyframes preview-fade-in {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes preview-slide-in {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes image-load-in {
-    from {
-      opacity: 0;
-      transform: scale(0.9) translateY(20px);
-      filter: blur(10px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-      filter: blur(0px);
-    }
-  }
-
-  .animate-preview-fade-in {
-    animation: preview-fade-in 0.3s ease-out forwards;
-  }
-
-  .animate-preview-slide-in {
-    animation: preview-slide-in 0.5s ease-out forwards;  }
-
-  .animate-image-load-in {
-    animation: image-load-in 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  /* 優化輸入框文字 */
+  input, textarea {
+    line-height: 1.5;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -186,24 +142,27 @@
   .btn-secondary:active {
     transform: translateY(0);
   }
-  
+
   .card {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    padding: 2rem;
     box-shadow: 
-      0 4px 20px rgba(0, 0, 0, 0.05),
-      0 1px 3px rgba(0, 0, 0, 0.1);
+      0 10px 40px rgba(0, 0, 0, 0.08),
+      0 4px 12px rgba(0, 0, 0, 0.05),
+      0 1px 3px rgba(0, 0, 0, 0.03);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card:hover {
+    transform: translateY(-4px);
     box-shadow: 
-      0 8px 40px rgba(0, 0, 0, 0.08),
-      0 2px 8px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
+      0 20px 60px rgba(0, 0, 0, 0.12),
+      0 8px 20px rgba(0, 0, 0, 0.08),
+      0 2px 6px rgba(0, 0, 0, 0.04);
+    border-color: rgba(59, 130, 246, 0.2);
   }
 
   .gradient-text {
@@ -273,6 +232,7 @@
       0 2px 4px rgba(0, 0, 0, 0.05);
     transform: translateY(-1px);
   }
+
   .tab-button:hover:not(.active) {
     background: rgba(255, 255, 255, 0.9);
     border-color: #3b82f6;
@@ -281,12 +241,47 @@
 
   /* 優化上傳區域 */
   .upload-zone {
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
-    padding: 24px;
+    background: linear-gradient(135deg, rgba(249, 250, 251, 0.8) 0%, rgba(243, 244, 246, 0.6) 100%);
+    border: 2px dashed rgba(156, 163, 175, 0.5);
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(5px);
   }
-    .input-field {
+
+  .upload-zone:hover {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, rgba(219, 234, 254, 0.8) 0%, rgba(191, 219, 254, 0.6) 100%);
+  }
+
+  /* 改善進度條 */
+  .progress-bar {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+  }
+
+  /* 狀態指示器 */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  .status-dot.online {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+  }
+
+  .status-dot.offline {
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+  }
+
+  /* 通用輸入框 */
+  .input-field {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #d1d5db;
@@ -299,38 +294,8 @@
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
-  
-  .gradient-text {
-    background: linear-gradient(to right, #2563eb, #4f46e5);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-  }
-    /* 簡化上傳區域樣式 */
-  .upload-zone {
-    border: 2px dashed #d1d5db;
-    border-radius: 12px;
-    padding: 40px 20px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    background-color: #f9fafb;
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .upload-zone:hover {
-    border-color: #3b82f6;
-    background-color: #f0f9ff;
-  }
-  
-  .upload-zone.dragging {
-    border-color: #2563eb;
-    background-color: #eff6ff;
-    transform: scale(1.01);
-  }
-    /* 簡化檔案項目樣式 */
+
+  /* 檔案項目樣式 */
   .file-item {
     border: 1px solid #e5e7eb;
     border-radius: 8px;
@@ -353,7 +318,7 @@
     align-items: center;
     justify-content: center;
   }
-  
+
   /* 玻璃效果 */
   .glass-effect {
     background: rgba(255, 255, 255, 0.8);

@@ -95,9 +95,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, className = '' }) =
     });
   };if (messages.length === 0) {
     return (
-      <div className={`card flex flex-col ${className}`}>
-        <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gradient-text">
-          <Sparkles className="w-6 h-6 mr-3" />
+      <div className={`card flex flex-col ${className}`}>        <h2 className="text-xl md:text-2xl font-bold mb-6 text-left">
           分享內容
           <span className="ml-2 text-sm font-normal text-gray-500">
             (0 個項目)
@@ -122,9 +120,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, className = '' }) =
       </div>
     );
   }  return (
-    <div className={`card flex flex-col ${className}`}>
-      <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gradient-text">
-        <Sparkles className="w-6 h-6 mr-3" />
+    <div className={`card flex flex-col ${className}`}>      <h2 className="text-xl md:text-2xl font-bold mb-6 text-left">
         分享內容
         <span className="ml-2 text-sm font-normal text-gray-500">
           ({messages.length} 個項目)
