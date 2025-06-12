@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { MessageSquare, Link, Clipboard, Mic, Send, Sparkles } from 'lucide-react';
+import { MessageSquare, Link, Clipboard, Mic, Send } from 'lucide-react';
 import { ShareMessage } from '../types';
 
 interface QuickShareProps {
   roomId: string;
-  isHost?: boolean;
   onMessageSent: (message: ShareMessage) => void;
 }
 
-const QuickShare: React.FC<QuickShareProps> = ({ roomId, isHost = false, onMessageSent }) => {
+const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
   const [activeTab, setActiveTab] = useState<'text' | 'url' | 'clipboard' | 'voice'>('text');
   const [textInput, setTextInput] = useState('');
   const [urlInput, setUrlInput] = useState('');

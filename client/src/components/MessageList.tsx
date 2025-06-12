@@ -8,8 +8,7 @@ import {
   Pause,
   ExternalLink,
   Copy,
-  Download,
-  Sparkles
+  Download
 } from 'lucide-react';
 import { ShareMessage } from '../types';
 import { toast } from 'react-hot-toast';

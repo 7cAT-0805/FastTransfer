@@ -257,21 +257,8 @@ const Room: React.FC = () => {
       }, 3000);
     } catch (error) {
       console.error('重試失敗:', error);
-      handleNetworkError(error instanceof Error ? error.message : '重試失敗');
-    } finally {
+      handleNetworkError(error instanceof Error ? error.message : '重試失敗');    } finally {
       setLoading(false);
-    }
-  };
-
-  // 重新獲取房間檔案列表的函數
-  const fetchRoomFiles = async () => {
-    try {
-      console.log('🔄 重新獲取檔案列表...');
-      const filesResponse = await apiWrapper.get(`/rooms/${roomId}/files`);
-      console.log('✅ 獲取到檔案列表:', filesResponse.data.files);
-      setFiles(filesResponse.data.files);
-    } catch (error) {
-      console.error('❌ 獲取檔案列表失敗:', error);
     }
   };
 
