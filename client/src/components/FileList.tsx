@@ -1,7 +1,8 @@
-import React from 'react';
-import { Download, FileText, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, FileText, Clock, Eye } from 'lucide-react';
 import { FileInfo } from '../types';
 import { formatFileSize, getFileIcon } from '../utils/helpers';
+import FilePreview from './FilePreview';
 
 interface FileListProps {
   files: FileInfo[];
@@ -9,6 +10,8 @@ interface FileListProps {
 }
 
 const FileList: React.FC<FileListProps> = ({ files, roomId }) => {
+  const [previewFile, setPreviewFile] = useState<FileInfo | null>(null);
+
   const handleDownload = (file: FileInfo) => {
     const downloadUrl = `/api/rooms/${roomId}/files/${file.filename}`;
     const link = document.createElement('a');
@@ -17,6 +20,23 @@ const FileList: React.FC<FileListProps> = ({ files, roomId }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handlePreview = (file: FileInfo) => {
+    // 為預覽設置檔案 URL
+    const fileWithPreview = {
+      ...file,
+      previewUrl: `/api/rooms/${roomId}/files/${file.filename}`
+    };
+    setPreviewFile(fileWithPreview);
+  };
+
+  const canPreview = (file: FileInfo) => {
+    const previewableTypes = [
+      'image/', 'video/', 'audio/', 'text/', 'application/pdf',
+      'application/json', 'application/xml'
+    ];
+    return previewableTypes.some(type => file.mimetype.startsWith(type) || file.mimetype.includes(type));
   };
 
   const formatDate = (date: Date | string) => {
@@ -77,22 +97,39 @@ const FileList: React.FC<FileListProps> = ({ files, roomId }) => {
                         </div>
                       </div>
                     </div>
+                  </div>                  {/* 操作按鈕 */}
+                  <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
+                    {canPreview(file) && (
+                      <button
+                        onClick={() => handlePreview(file)}
+                        className="btn-secondary flex items-center space-x-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>預覽</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDownload(file)}
+                      className="btn-primary flex items-center space-x-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>下載</span>
+                    </button>
                   </div>
-
-                  {/* 下載按鈕 */}
-                  <button
-                    onClick={() => handleDownload(file)}
-                    className="btn-primary flex items-center space-x-2 ml-4 flex-shrink-0"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>下載</span>
-                  </button>
                 </div>
               </div>
             ))}
-          </div>
-        )}
+          </div>        )}
       </div>
+      
+      {/* 檔案預覽模態框 */}
+      {previewFile && (
+        <FilePreview
+          file={previewFile}
+          onClose={() => setPreviewFile(null)}
+          onDownload={() => handleDownload(previewFile)}
+        />
+      )}
     </div>
   );
 };

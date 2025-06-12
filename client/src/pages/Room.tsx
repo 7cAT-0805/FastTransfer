@@ -12,22 +12,27 @@ import {
 } from 'lucide-react';
 import apiWrapper from '../utils/api';
 import socketService from '../utils/socket';
-import { FileInfo } from '../types';
+import { FileInfo, ShareMessage } from '../types';
 import { copyToClipboard, generateRoomUrl } from '../utils/helpers';
 import FileUploader from '../components/FileUploader';
 import FileList from '../components/FileList';
 import QRCodeGenerator from '../components/QRCodeGenerator';
+import MessageList from '../components/MessageList';
+
+// 直接重新導入 QuickShare
+import QuickShare from '../components/QuickShare';
 
 const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  
-  const [isHost, setIsHost] = useState(false);
+    const [isHost, setIsHost] = useState(false);
   const [files, setFiles] = useState<FileInfo[]>([]);
-  const [participants, setParticipants] = useState(0);  const [loading, setLoading] = useState(true);
+  const [participants, setParticipants] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [roomUrl, setRoomUrl] = useState('');
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const [showQRCode, setShowQRCode] = useState(false);
+  const [messages, setMessages] = useState<ShareMessage[]>([]);
 
   useEffect(() => {
     if (!roomId) {
@@ -155,6 +160,13 @@ const Room: React.FC = () => {
       socketService.disconnect();
     };
   }, [roomId, navigate]);
+  // 處理分享訊息
+  const handleMessageSent = (message: ShareMessage) => {
+    setMessages(prev => [...prev, message]);
+    // 這裡可以通過 Socket.IO 廣播訊息給房間其他成員
+    // socketService.emit('shareMessage', message);
+  };
+
   const handleCopyRoomUrl = async () => {
     // 顯示 QR Code 模態對話框，而不是直接複製
     setShowQRCode(true);
@@ -243,22 +255,34 @@ const Room: React.FC = () => {
               </div>
             </div>          </div>        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">{/* 檔案上傳區 (僅房主可見) */}
-          {isHost && (
-            <div className="lg:col-span-1">
+        {/* 主內容區域 - 新布局 */}        <div className="flex flex-col xl:flex-row gap-8">
+          
+          {/* 左側：檔案上傳和快速分享 (房主) 或 快速分享 (訪客) */}
+          <div className="xl:w-1/4 space-y-6">
+            {isHost && (
               <FileUploader 
                 roomId={roomId!}
               />
-            </div>
-          )}
+            )}
+            <QuickShare 
+              roomId={roomId!}
+              onMessageSent={handleMessageSent}
+            />
+          </div>
 
-          {/* 檔案列表 */}
-          <div className={isHost ? 'lg:col-span-2' : 'lg:col-span-3'}>
+          {/* 中間：檔案列表 */}
+          <div className="xl:w-2/4">
             <FileList 
               files={files} 
               roomId={roomId!}
             />
-          </div>        </div>
+          </div>
+
+          {/* 右側：分享訊息 */}
+          <div className="xl:w-1/4">
+            <MessageList messages={messages} />
+          </div>
+        </div>
         {/* QR Code 模態對話框 */}
         {showQRCode && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowQRCode(false)}>            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
