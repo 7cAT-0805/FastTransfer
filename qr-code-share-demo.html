@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code 分享功能測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            margin-bottom: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-secondary:hover { background: #545b62; }
+        
+        /* 模態對話框樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+        }
+        .modal-header {
+            text-align: center;
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .close-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 32px;
+            height: 32px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #6b7280;
+        }
+        .close-btn:hover {
+            background: #e5e7eb;
+        }
+        .qr-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .modal-actions {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 QR Code 分享功能測試</h1>
+        
+        <div class="demo-section">
+            <h3>📱 新的分享體驗</h3>
+            <p><strong>改進前：</strong> 點擊「分享連結」直接複製 URL 到剪貼簿</p>
+            <p><strong>改進後：</strong> 點擊「分享 QR Code」顯示模態對話框，包含：</p>
+            <ul>
+                <li>✅ QR Code 圖像供掃描</li>
+                <li>✅ 複製連結按鈕</li>
+                <li>✅ 下載/分享 QR Code 功能</li>
+                <li>✅ 更好的用戶體驗</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎮 互動演示</h3>
+            <p>點擊下方按鈕體驗新的分享功能：</p>
+            <button class="btn-primary" onclick="showQRModal()">
+                📱 分享 QR Code
+            </button>
+        </div>
+
+        <div class="demo-section">
+            <h3>✨ 功能特色</h3>
+            <ul>
+                <li><strong>即時顯示：</strong> 點擊即顯示 QR Code，無需額外步驟</li>
+                <li><strong>多種選項：</strong> 可以掃描、複製連結或下載 QR Code</li>
+                <li><strong>響應式設計：</strong> 在手機和桌面都有良好體驗</li>
+                <li><strong>易於關閉：</strong> 點擊外部區域或 X 按鈕關閉</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- QR Code 模態對話框 -->
+    <div id="qrModal" class="modal-overlay hidden" onclick="hideQRModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button class="close-btn" onclick="hideQRModal()">✕</button>
+                <h3>分享房間</h3>
+            </div>
+            
+            <div class="qr-container">
+                <div class="qr-placeholder">
+                    <div>
+                        📱<br>
+                        QR Code 區域<br>
+                        <small>(實際應用中會顯示真實的 QR Code)</small>
+                    </div>
+                </div>
+                <p style="font-size: 12px; color: #6c757d; margin-top: 12px;">
+                    使用手機掃描上方 QR Code 即可快速加入房間
+                </p>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="copyRoomLink()">
+                    📋 複製房間連結
+                </button>
+                <button class="btn-primary" style="width: 100%;" onclick="hideQRModal()">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功提示 -->
+    <div id="successMessage" class="success hidden">
+        ✅ 房間連結已複製到剪貼簿！
+    </div>
+
+    <script>
+        function showQRModal() {
+            document.getElementById('qrModal').classList.remove('hidden');
+        }
+
+        function hideQRModal() {
+            document.getElementById('qrModal').classList.add('hidden');
+        }
+
+        function copyRoomLink() {
+            // 模擬複製功能
+            const testUrl = 'https://fasttransfer.netlify.app/room/TEST123';
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(testUrl).then(() => {
+                    showSuccessMessage();
+                }).catch(() => {
+                    showSuccessMessage(); // 演示用途
+                });
+            } else {
+                showSuccessMessage(); // 演示用途
+            }
+        }
+
+        function showSuccessMessage() {
+            const message = document.getElementById('successMessage');
+            message.classList.remove('hidden');
+            setTimeout(() => {
+                message.classList.add('hidden');
+            }, 3000);
+        }
+
+        // ESC 鍵關閉模態對話框
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                hideQRModal();
+            }
+        });
+    </script>
+
+    <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #007bff;">
+        <h4>🔧 技術實現</h4>
+        <p>此功能在 <code>Room.tsx</code> 中實現了以下改進：</p>
+        <ul>
+            <li>添加了 <code>showQRCode</code> 狀態控制模態對話框顯示</li>
+            <li>修改 <code>handleCopyRoomUrl</code> 函數改為顯示模態對話框</li>
+            <li>使用 QrCode 圖標替換 Share2 圖標</li>
+            <li>模態對話框包含完整的 QRCodeGenerator 組件</li>
+            <li>提供複製連結和關閉功能</li>
+        </ul>
+    </div>
+</body>
+</html>

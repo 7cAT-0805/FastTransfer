@@ -1,13 +1,20 @@
 import axios from 'axios';
+import { DeveloperMode } from './developerMode';
 
 // 更新為 Railway 後端 URL
 const API_BASE_URL = 'https://fasttransfer-production.up.railway.app';
 
-// 除錯資訊
-console.log('🔧 API Configuration:');
-console.log('Environment:', import.meta.env.MODE);
-console.log('API_BASE_URL:', API_BASE_URL);
-console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL);
+// 初始化開發者模式
+const devMode = DeveloperMode.getInstance();
+
+// 除錯資訊 - 只在開發者模式下顯示
+if (devMode.isEnabled()) {
+  console.log('🔧 API Configuration:');
+  console.log('Environment:', import.meta.env.MODE);
+  console.log('API_BASE_URL:', API_BASE_URL);
+  console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL);
+  console.log('Developer Mode:', devMode.isEnabled() ? '🛠️ ENABLED' : '❌ DISABLED');
+}
 
 export const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -29,14 +36,17 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     return response;
-  },
-  async (error) => {
-    console.error('🚨 API Error:', error);
+  },  async (error) => {
+    if (devMode.isEnabled()) {
+      console.error('🚨 API Error:', error);
+    }
     
-    // 如果是連接錯誤，Render 可能在休眠，嘗試重試
+    // 如果是連接錯誤，Railway 可能在休眠，嘗試重試
     if ((error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') && !error.config._retry) {
       error.config._retry = true;
-      console.log('🔄 Server might be sleeping, retrying in 5 seconds...');
+      if (devMode.isEnabled()) {
+        console.log('🔄 Server might be sleeping, retrying in 5 seconds...');
+      }
       await new Promise(resolve => setTimeout(resolve, 5000));
       return api.request(error.config);
     }
@@ -48,4 +58,59 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+// 開發者模式 API 包裝函數
+export const apiWrapper = {
+  async post(url: string, data?: any, config?: any) {
+    if (devMode.isEnabled()) {
+      console.log('🛠️ Dev Mode API Call:', 'POST', url, data);
+      
+      // 模擬上傳進度
+      if (url.includes('/upload') && config?.onUploadProgress) {
+        // 模擬上傳進度回調
+        const progressCallback = config.onUploadProgress;
+        const simulateProgress = () => {
+          for (let i = 0; i <= 100; i += 10) {
+            setTimeout(() => {
+              progressCallback({ loaded: i, total: 100 });
+            }, i * 10);
+          }
+        };
+        simulateProgress();
+      }
+      
+      // 模擬 API 響應
+      if (url === '/rooms') {
+        return { data: await devMode.mockCreateRoom() };
+      } else if (url.includes('/join')) {
+        const roomId = url.split('/')[2];
+        return { data: await devMode.mockJoinRoom(roomId) };
+      } else if (url.includes('/upload')) {
+        return { data: await devMode.mockUploadFile(data.get ? data.get('file') : data.file) };
+      }
+      
+      // 默認模擬響應
+      return { data: { success: true, message: 'Mock API Response' } };
+    }
+    
+    return api.post(url, data, config);
+  },
+
+  async get(url: string) {
+    if (devMode.isEnabled()) {
+      console.log('🛠️ Dev Mode API Call:', 'GET', url);
+      
+      if (url.includes('/files')) {
+        const mockRoom = devMode.getMockRoom();
+        return { data: { files: mockRoom?.files || [] } };
+      } else if (url === '/health') {
+        return { data: { status: 'OK (Mock)', timestamp: new Date().toISOString() } };
+      }
+      
+      return { data: { success: true, message: 'Mock API Response' } };
+    }
+    
+    return api.get(url);
+  }
+};
+
+export default apiWrapper;

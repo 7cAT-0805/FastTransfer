@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastTransfer 開發者模式測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 3px; 
+            overflow-x: auto;
+        }
+        .console-output {
+            background: #212529;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ FastTransfer 開發者模式測試</h1>
+        
+        <div class="test-section info">
+            <h3>📋 測試說明</h3>
+            <p>這個頁面用於測試 FastTransfer 的開發者模式功能。請按照以下步驟進行測試：</p>
+        </div>
+
+        <div class="test-section">
+            <h3>1️⃣ 開發者模式啟用測試</h3>
+            <p><strong>操作：</strong>按 F12 打開開發者工具，在控制台輸入 <code>DevMode_7cAT()</code></p>
+            <button onclick="checkDevMode()">檢查開發者模式狀態</button>
+            <div id="devModeStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2️⃣ 模擬 API 測試</h3>
+            <button onclick="testMockAPI()">測試模擬 API</button>
+            <div id="apiTestResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3️⃣ 模擬 Socket 測試</h3>
+            <button onclick="testMockSocket()">測試模擬 Socket</button>
+            <div id="socketTestResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4️⃣ 文件圖標測試</h3>
+            <button onclick="testFileIcons()">測試文件圖標</button>
+            <div id="fileIconResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5️⃣ 控制台日誌測試</h3>
+            <button onclick="testConsoleLog()">測試控制台日誌</button>
+            <div id="consoleLogResult"></div>
+        </div>
+
+        <div class="test-section warning">
+            <h3>⚠️ 注意事項</h3>
+            <ul>
+                <li>開發者模式只能通過 F12 控制台輸入 <code>DevMode_7cAT()</code> 啟用</li>
+                <li>啟用後會在頁面右下角顯示開發者面板</li>
+                <li>所有 API 請求將使用模擬數據</li>
+                <li>控制台日誌只在開發者模式下顯示</li>
+                <li>開發者模式狀態會保存在 localStorage 中</li>
+            </ul>
+        </div>
+
+        <div class="console-output" id="consoleOutput">
+            控制台輸出將顯示在這裡...
+        </div>
+    </div>
+
+    <script>
+        // 模擬開發者模式類
+        class MockDeveloperMode {
+            static instance = null;
+            enabled = false;
+
+            static getInstance() {
+                if (!this.instance) {
+                    this.instance = new MockDeveloperMode();
+                }
+                return this.instance;
+            }
+
+            isEnabled() {
+                return this.enabled || localStorage.getItem('fastransfer_dev_mode') === 'true';
+            }
+
+            enable() {
+                this.enabled = true;
+                localStorage.setItem('fastransfer_dev_mode', 'true');
+                console.log('🚀 Developer Mode Activated!');
+            }
+
+            getMockFiles() {
+                return [
+                    { name: 'test.txt', mimetype: 'text/plain' },
+                    { name: 'image.jpg', mimetype: 'image/jpeg' },
+                    { name: 'document.pdf', mimetype: 'application/pdf' },
+                    { name: 'archive.zip', mimetype: 'application/zip' },
+                    { name: 'unknown', mimetype: undefined }
+                ];
+            }
+        }
+
+        // 模擬文件圖標函數
+        function getFileIcon(mimetype) {
+            if (!mimetype) return '📁';
+            if (mimetype.startsWith('image/')) return '🖼️';
+            if (mimetype.startsWith('video/')) return '🎥';
+            if (mimetype.startsWith('audio/')) return '🎵';
+            if (mimetype.includes('pdf')) return '📄';
+            if (mimetype.includes('zip') || mimetype.includes('rar')) return '📦';
+            if (mimetype.includes('text')) return '📝';
+            return '📁';
+        }
+
+        const devMode = MockDeveloperMode.getInstance();
+        let consoleOutput = document.getElementById('consoleOutput');
+
+        // 重寫 console.log 來顯示輸出
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            if (devMode.isEnabled()) {
+                consoleOutput.innerHTML += `<div>🔧 ${args.join(' ')}</div>`;
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            }
+        };
+
+        // 添加全域開發者模式啟用函數
+        window.DevMode_7cAT = () => {
+            console.log('🛠️ Activating Developer Mode...');
+            devMode.enable();
+            checkDevMode();
+        };
+
+        function checkDevMode() {
+            const status = document.getElementById('devModeStatus');
+            const isEnabled = devMode.isEnabled();
+            
+            if (isEnabled) {
+                status.innerHTML = `
+                    <div class="success" style="padding: 10px; margin-top: 10px; border-radius: 5px;">
+                        ✅ 開發者模式已啟用
+                        <br>localStorage 狀態: ${localStorage.getItem('fastransfer_dev_mode')}
+                    </div>`;
+            } else {
+                status.innerHTML = `
+                    <div class="warning" style="padding: 10px; margin-top: 10px; border-radius: 5px;">
+                        ⚠️ 開發者模式未啟用
+                        <br>請在控制台輸入 DevMode_7cAT() 來啟用
+                    </div>`;
+            }
+        }
+
+        function testMockAPI() {
+            const result = document.getElementById('apiTestResult');
+            
+            if (!devMode.isEnabled()) {
+                result.innerHTML = `<div class="warning" style="padding: 10px; margin-top: 10px; border-radius: 5px;">請先啟用開發者模式</div>`;
+                return;
+            }
+
+            console.log('🛠️ Dev Mode API Call: POST /rooms');
+            console.log('🛠️ Dev Mode API Call: GET /files');
+            
+            result.innerHTML = `
+                <div class="success" style="padding: 10px; margin-top: 10px; border-radius: 5px;">
+                    ✅ 模擬 API 測試完成
+                    <br>• 模擬房間創建 API
+                    <br>• 模擬文件獲取 API
+                    <br>• 檢查控制台輸出
+                </div>`;
+        }
+
+        function testMockSocket() {
+            const result = document.getElementById('socketTestResult');
+            
+            if (!devMode.isEnabled()) {
+                result.innerHTML = `<div class="warning" style="padding: 10px; margin-top: 10px; border-radius: 5px;">請先啟用開發者模式</div>`;
+                return;
+            }
+
+            console.log('🔌 Mock Socket Emit: joinRoom');
+            console.log('🛠️ Developer Mode: Using mock socket');
+            console.log('🛠️ Developer Mode: Simulating room join: TEST123');
+            
+            result.innerHTML = `
+                <div class="success" style="padding: 10px; margin-top: 10px; border-radius: 5px;">
+                    ✅ 模擬 Socket 測試完成
+                    <br>• 模擬 Socket 連接
+                    <br>• 模擬房間加入
+                    <br>• 檢查控制台輸出
+                </div>`;
+        }
+
+        function testFileIcons() {
+            const result = document.getElementById('fileIconResult');
+            const mockFiles = devMode.getMockFiles();
+            
+            let output = '<div style="padding: 10px; margin-top: 10px; border-radius: 5px; background: #f8f9fa;">';
+            output += '<h4>文件圖標測試結果：</h4>';
+            
+            mockFiles.forEach(file => {
+                const icon = getFileIcon(file.mimetype);
+                output += `<div>${icon} ${file.name} (${file.mimetype || 'undefined'})</div>`;
+                console.log(`📁 File icon test: ${file.name} -> ${icon}`);
+            });
+            
+            output += '</div>';
+            result.innerHTML = output;
+        }
+
+        function testConsoleLog() {
+            const result = document.getElementById('consoleLogResult');
+            
+            // 測試各種類型的日誌
+            console.log('🔧 API Configuration test log');
+            console.log('✅ Socket連接測試');
+            console.log('🚪 嘗試加入房間測試');
+            console.log('🛠️ 開發者模式測試日誌');
+            
+            if (devMode.isEnabled()) {
+                result.innerHTML = `
+                    <div class="success" style="padding: 10px; margin-top: 10px; border-radius: 5px;">
+                        ✅ 控制台日誌測試完成
+                        <br>• 開發者模式：顯示所有日誌
+                        <br>• 檢查控制台和下方輸出區域
+                    </div>`;
+            } else {
+                result.innerHTML = `
+                    <div class="info" style="padding: 10px; margin-top: 10px; border-radius: 5px;">
+                        ℹ️ 非開發者模式：日誌被隱藏
+                        <br>• 生產環境不會顯示除錯日誌
+                        <br>• 請啟用開發者模式查看完整日誌
+                    </div>`;
+            }
+        }
+
+        // 清除按鈕
+        function clearConsole() {
+            consoleOutput.innerHTML = '控制台輸出將顯示在這裡...';
+        }
+
+        function resetDevMode() {
+            localStorage.removeItem('fastransfer_dev_mode');
+            devMode.enabled = false;
+            checkDevMode();
+            clearConsole();
+        }
+
+        // 初始化
+        checkDevMode();
+    </script>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="clearConsole()">清除控制台輸出</button>
+        <button onclick="resetDevMode()" style="background: #dc3545;">重置開發者模式</button>
+    </div>
+</body>
+</html>

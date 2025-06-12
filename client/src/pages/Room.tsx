@@ -5,11 +5,12 @@ import {
   Copy, 
   Users, 
   FileText, 
-  Share2,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  QrCode,
+  X
 } from 'lucide-react';
-import api from '../utils/api';
+import apiWrapper from '../utils/api';
 import socketService from '../utils/socket';
 import { FileInfo } from '../types';
 import { copyToClipboard, generateRoomUrl } from '../utils/helpers';
@@ -26,6 +27,7 @@ const Room: React.FC = () => {
   const [participants, setParticipants] = useState(0);  const [loading, setLoading] = useState(true);
   const [roomUrl, setRoomUrl] = useState('');
   const [connectionStatus, setConnectionStatus] = useState('connecting');
+  const [showQRCode, setShowQRCode] = useState(false);
 
   useEffect(() => {
     if (!roomId) {
@@ -37,15 +39,14 @@ const Room: React.FC = () => {
       try {        // 檢查是否為房主
         const hostId = localStorage.getItem(`room_${roomId}_host`);
         console.log('🏠 Host ID from localStorage:', hostId);
-        
-        if (hostId) {
-          const response = await api.post(`/rooms/${roomId}/verify-host`, { hostId });
+          if (hostId) {
+          const response = await apiWrapper.post(`/rooms/${roomId}/verify-host`, { hostId });
           setIsHost(response.data.isHost);
           console.log('✅ Is Host:', response.data.isHost);
         } else {
           // 如果不是房主，嘗試加入房間
           try {
-            const joinResponse = await api.post(`/rooms/${roomId}/join`);
+            const joinResponse = await apiWrapper.post(`/rooms/${roomId}/join`);
             console.log('👥 Joined as guest:', joinResponse.data);
           } catch (error) {
             console.error('❌ Failed to join room:', error);
@@ -54,7 +55,7 @@ const Room: React.FC = () => {
             return;
           }
         }// 獲取房間檔案列表
-        const filesResponse = await api.get(`/rooms/${roomId}/files`);
+        const filesResponse = await apiWrapper.get(`/rooms/${roomId}/files`);
         setFiles(filesResponse.data.files);
 
         // 設置房間URL
@@ -154,14 +155,9 @@ const Room: React.FC = () => {
       socketService.disconnect();
     };
   }, [roomId, navigate]);
-
   const handleCopyRoomUrl = async () => {
-    const success = await copyToClipboard(roomUrl);
-    if (success) {
-      toast.success('房間連結已複製到剪貼簿');
-    } else {
-      toast.error('複製失敗，請手動複製');
-    }
+    // 顯示 QR Code 模態對話框，而不是直接複製
+    setShowQRCode(true);
   };
 
   const handleCopyRoomCode = async () => {
@@ -215,21 +211,20 @@ const Room: React.FC = () => {
                 </div>
               </div>
             </div>
-            
-            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={handleCopyRoomCode}
-                className="btn-secondary flex items-center justify-center"
+                className="btn-secondary flex items-center justify-start"
               >
                 <Copy className="w-4 h-4 mr-2" />
                 複製代碼
               </button>
               <button
                 onClick={handleCopyRoomUrl}
-                className="btn-primary flex items-center justify-center"
+                className="btn-primary flex items-center justify-start"
               >
-                <Share2 className="w-4 h-4 mr-2" />
-                分享連結
+                <QrCode className="w-4 h-4 mr-2" />
+                分享 QR Code
               </button>
             </div>
           </div>
@@ -246,13 +241,7 @@ const Room: React.FC = () => {
                   <li>檔案會在房間關閉時立即刪除</li>
                 </ul>
               </div>
-            </div>          </div>
-        </div>
-
-        {/* QR Code 區域 */}
-        <div className="mb-8">
-          <QRCodeGenerator roomUrl={roomUrl} roomId={roomId!} />
-        </div>
+            </div>          </div>        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">{/* 檔案上傳區 (僅房主可見) */}
           {isHost && (
@@ -270,6 +259,44 @@ const Room: React.FC = () => {
               roomId={roomId!}
             />
           </div>        </div>
+        {/* QR Code 模態對話框 */}
+        {showQRCode && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowQRCode(false)}>            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+              <div className="text-center relative">
+                <button
+                  onClick={() => setShowQRCode(false)}
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">分享房間</h3>
+                <QRCodeGenerator roomUrl={roomUrl} roomId={roomId!} />
+                <div className="mt-4">
+                <button
+                    onClick={async () => {
+                      const success = await copyToClipboard(roomUrl);
+                      if (success) {
+                        toast.success('房間連結已複製到剪貼簿');
+                      } else {
+                        toast.error('複製失敗，請手動複製');
+                      }
+                    }}
+                    className="btn-secondary w-full mb-2 flex items-center justify-center"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    複製房間連結
+                  </button>
+                  <button
+                    onClick={() => setShowQRCode(false)}
+                    className="btn-primary w-full"
+                  >
+                    關閉
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { Upload, X, FileText, AlertCircle } from 'lucide-react';
-import api from '../utils/api';
+import { apiWrapper } from '../utils/api';
 import { formatFileSize } from '../utils/helpers';
 
 interface FileUploaderProps {
@@ -90,13 +90,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({ roomId }) => {
         try {
           const formData = new FormData();
           formData.append('file', file);
-          formData.append('hostId', hostId);
-
-          await api.post(`/rooms/${roomId}/upload`, formData, {
+          formData.append('hostId', hostId);          await apiWrapper.post(`/rooms/${roomId}/upload`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
-            onUploadProgress: (progressEvent) => {
+            onUploadProgress: (progressEvent: any) => {
               if (progressEvent.total) {
                 const percentCompleted = Math.round(
                   (progressEvent.loaded * 100) / progressEvent.total

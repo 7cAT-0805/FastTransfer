@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Plus, Users, Upload, Shield, Zap, Globe } from 'lucide-react';
-import api from '../utils/api';
-import { CreateRoomResponse, JoinRoomResponse } from '../types';
+import apiWrapper from '../utils/api';
 
 const Home: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
@@ -14,7 +13,7 @@ const Home: React.FC = () => {
   const handleCreateRoom = async () => {
     setIsCreating(true);
     try {
-      const response = await api.post<CreateRoomResponse>('/rooms');
+      const response = await apiWrapper.post('/rooms');
       const { roomId, hostId } = response.data;
       
       // 儲存房主身份
@@ -36,7 +35,7 @@ const Home: React.FC = () => {
       return;
     }    setIsJoining(true);
     try {
-      await api.post<JoinRoomResponse>(`/rooms/${joinCode.toUpperCase()}/join`);
+      await apiWrapper.post(`/rooms/${joinCode.toUpperCase()}/join`);
       toast.success('成功加入房間！');
       navigate(`/room/${joinCode.toUpperCase()}`);
     } catch (error) {

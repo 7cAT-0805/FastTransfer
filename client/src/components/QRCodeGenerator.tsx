@@ -14,15 +14,14 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ roomUrl, roomId }) =>
   useEffect(() => {
     generateQRCode();
   }, [roomUrl]);
-
   const generateQRCode = async () => {
     if (!canvasRef.current || !roomUrl) return;
 
     try {
-      // 生成 QR Code 到 canvas
+      // 生成 QR Code 到 canvas - 調整為更小的尺寸
       await QRCode.toCanvas(canvasRef.current, roomUrl, {
-        width: 200,
-        margin: 2,
+        width: 120, // 從 200 縮小到 120
+        margin: 1,  // 從 2 縮小到 1，減少邊距
         color: {
           dark: '#1f2937', // 深灰色
           light: '#ffffff' // 白色背景
@@ -30,9 +29,9 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ roomUrl, roomId }) =>
         errorCorrectionLevel: 'M'
       });
 
-      // 同時生成 Data URL 用於下載
+      // 同時生成 Data URL 用於下載 - 下載版本保持高解析度
       const dataUrl = await QRCode.toDataURL(roomUrl, {
-        width: 400,
+        width: 400, // 下載版本保持高解析度
         margin: 2,
         color: {
           dark: '#1f2937',
@@ -80,16 +79,15 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ roomUrl, roomId }) =>
       await navigator.clipboard.writeText(roomUrl);
     }
   };
-
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
-      <div className="flex items-center justify-center mb-4">
-        <Smartphone className="w-5 h-5 text-gray-600 mr-2" />
-        <h3 className="text-lg font-semibold text-gray-900">掃描 QR Code</h3>
+    <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
+      <div className="flex items-center justify-center mb-3">
+        <Smartphone className="w-4 h-4 text-gray-600 mr-2" />
+        <h3 className="text-base font-semibold text-gray-900">掃描 QR Code</h3>
       </div>
       
-      <div className="flex justify-center mb-4">
-        <div className="p-4 bg-gray-50 rounded-lg">
+      <div className="flex justify-center mb-3">
+        <div className="p-2 bg-gray-50 rounded-lg">
           <canvas
             ref={canvasRef}
             className="border border-gray-200 rounded"
@@ -97,7 +95,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ roomUrl, roomId }) =>
         </div>
       </div>
       
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-xs text-gray-600 mb-3">
         使用手機掃描上方 QR Code 即可快速加入房間
       </p>
       

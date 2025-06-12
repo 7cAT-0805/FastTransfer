@@ -9,6 +9,7 @@ export const formatFileSize = (bytes: number): string => {
 };
 
 export const getFileIcon = (mimetype: string): string => {
+  if (!mimetype) return '📁'; // 處理 undefined 或 null 的情況
   if (mimetype.startsWith('image/')) return '🖼️';
   if (mimetype.startsWith('video/')) return '🎥';
   if (mimetype.startsWith('audio/')) return '🎵';
