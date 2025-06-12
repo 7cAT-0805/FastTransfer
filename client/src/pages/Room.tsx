@@ -280,79 +280,85 @@ const Room: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-4 sm:py-8">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* 房間資訊 */}
-        <div className="card mb-8">
+        <div className="card mb-6 sm:mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div className="mb-4 md:mb-0">              <h1 className="text-3xl font-bold text-gray-900 mb-3 text-content">
+            <div className="mb-4 md:mb-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 text-content">
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   房間 {roomId}
                 </span>
                 {isHost && (
-                  <div className="inline-flex items-center ml-4 px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-white shadow-lg shadow-amber-500/30 animate-pulse">
-                    <div className="w-2 h-2 bg-white rounded-full mr-2 animate-ping"></div>
+                  <div className="inline-flex items-center ml-2 sm:ml-4 px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-white shadow-lg shadow-amber-500/30 animate-pulse">
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full mr-1 sm:mr-2 animate-ping"></div>
                     <span className="mr-1">👑</span>
                     房主
                   </div>
                 )}
               </h1>
-              <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <div className="flex items-center space-x-3 sm:space-x-4 text-xs sm:text-sm text-gray-600">
                 <div className="flex items-center">
-                  <Users className="w-4 h-4 mr-1" />
+                  <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   <span>{participants} 人在線</span>
                 </div>
                 <div className="flex items-center">
-                  <FileText className="w-4 h-4 mr-1" />
+                  <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   <span>{files.length} 個檔案</span>
                 </div>
               </div>
             </div>
-              <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 onClick={handleCopyRoomCode}
-                className="btn-secondary flex items-center justify-start"
+                className="btn-secondary flex items-center justify-center text-xs sm:text-sm py-2 sm:py-3 px-3 sm:px-4"
               >
-                <Copy className="w-4 h-4 mr-2" />
+                <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 複製代碼
               </button>
               <button
                 onClick={handleCopyRoomUrl}
-                className="btn-primary flex items-center justify-start"
+                className="btn-primary flex items-center justify-center text-xs sm:text-sm py-2 sm:py-3 px-3 sm:px-4"
               >
-                <QrCode className="w-4 h-4 mr-2" />
+                <QrCode className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 分享 QR Code
               </button>
             </div>
-          </div>          {/* 房間說明 */}
-          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-200/50 shadow-sm">
+          </div>
+
+          {/* 房間說明 - 移動端優化 */}
+          <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl sm:rounded-2xl border border-blue-200/50 shadow-sm">
             <div className="flex">
-              <AlertCircle className="w-6 h-6 text-blue-600 mt-0.5 mr-4 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 mt-0.5 mr-3 sm:mr-4 flex-shrink-0" />
               <div className="text-blue-800">
-                <h3 className="text-lg font-bold mb-3 text-gray-900">房間使用說明</h3>
-                <ul className="space-y-2 list-none text-content">
+                <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-gray-900">房間使用說明</h3>
+                <ul className="space-y-1.5 sm:space-y-2 list-none text-xs sm:text-sm text-content">
                   <li className="flex items-start">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-500 rounded-full mr-2 sm:mr-3 mt-1.5 sm:mt-2 flex-shrink-0"></span>
                     <span className="text-gray-700">所有成員都可以上傳和下載檔案，享受無限制的檔案分享體驗</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full mr-2 sm:mr-3 mt-1.5 sm:mt-2 flex-shrink-0"></span>
                     <span className="text-gray-700">所有成員都可以發送快速分享，包括文字、網址、剪貼簿和語音訊息</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="w-2 h-2 bg-amber-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-amber-500 rounded-full mr-2 sm:mr-3 mt-1.5 sm:mt-2 flex-shrink-0"></span>
                     <span className="text-gray-700">房主離開時房間會立即關閉，請確保重要檔案已下載完成</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full mr-2 sm:mr-3 mt-1.5 sm:mt-2 flex-shrink-0"></span>
                     <span className="text-gray-700">檔案會在房間關閉時立即刪除，無法恢復，請及時保存</span>
                   </li>
                 </ul>
               </div>
             </div>
-          </div></div>        {/* 網路錯誤顯示 */}
+          </div>
+        </div>
+
+        {/* 網路錯誤顯示 */}
         {networkError && (
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <NetworkError
               error={networkError}
               onRetry={retryJoinRoom}
@@ -362,10 +368,11 @@ const Room: React.FC = () => {
           </div>
         )}
 
-        {/* 主內容區域 - 簡化布局 */}
-        <div className="flex flex-col lg:flex-row gap-8">
+        {/* 主內容區域 - 移動端響應式布局 */}
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
           {/* 左側：統一的上傳和分享區域 */}
-          <div className="lg:w-1/3">            <ShareAndUpload 
+          <div className="lg:w-1/3">
+            <ShareAndUpload 
               roomId={roomId!}
               onMessageSent={handleMessageSent}
               onFileUploaded={(file) => {
@@ -391,6 +398,7 @@ const Room: React.FC = () => {
             />
           </div>
         </div>
+
         {/* QR Code 模態對話框 */}
         {showQRCode && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowQRCode(false)}>            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>

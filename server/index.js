@@ -169,14 +169,14 @@ app.post('/api/rooms/:roomId/upload', upload.single('file'), (req, res) => {
     return res.status(400).json({ error: '沒有檔案被上傳' });
   }
   
-  const fileId = uuidv4();
-  const fileInfo = {
+  const fileId = uuidv4();  const fileInfo = {
     id: fileId,
     originalName: req.file.originalname,
     filename: fileId, // 使用UUID作為檔案識別
     size: req.file.size,
     uploadedAt: new Date(),
-    mimetype: req.file.mimetype
+    mimetype: req.file.mimetype,
+    previewUrl: `/api/rooms/${roomId}/files/${fileId}` // 添加預覽URL
   };
   
   // 將檔案內容存儲在內存中
@@ -238,14 +238,7 @@ app.get('/api/rooms/:roomId/files/:filename', (req, res) => {
     console.log(`📋 可用檔案緩存:`, Array.from(roomBuffers.keys()));
     return res.status(404).json({ error: '檔案內容不存在' });
   }
-  
-  console.log(`✅ 檔案服務成功: ${fileData.originalName} (${fileData.buffer.length} bytes)`);
-  const roomBuffers = fileBuffers.get(roomId);
-  const fileData = roomBuffers.get(filename);
-  
-  if (!fileData) {
-    return res.status(404).json({ error: '檔案內容不存在' });
-  }
+    console.log(`✅ 檔案服務成功: ${fileData.originalName} (${fileData.buffer.length} bytes)`);
     // 設置響應標頭 - 支援中文檔名
   res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(fileData.originalName)}`);
   res.setHeader('Content-Type', fileData.mimetype || 'application/octet-stream');
