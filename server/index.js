@@ -202,35 +202,57 @@ app.post('/api/rooms/:roomId/upload', upload.single('file'), (req, res) => {
   });
 });
 
-// 檔案下載
+// 檔案下載/預覽
 app.get('/api/rooms/:roomId/files/:filename', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const filename = req.params.filename;
   
+  console.log(`📁 檔案請求: roomId=${roomId}, filename=${filename}`);
+  
   if (!rooms.has(roomId)) {
+    console.log(`❌ 房間不存在: ${roomId}`);
     return res.status(404).json({ error: '房間不存在' });
   }
   
   const files = roomFiles.get(roomId) || [];
+  console.log(`📋 房間檔案列表:`, files.map(f => ({id: f.id, filename: f.filename, originalName: f.originalName})));
+  
   const file = files.find(f => f.filename === filename);
   
   if (!file) {
+    console.log(`❌ 檔案元數據不存在: ${filename}`);
     return res.status(404).json({ error: '檔案不存在' });
   }
   
   // 從內存中獲取檔案
+  const roomBuffers = fileBuffers.get(roomId);
+  if (!roomBuffers) {
+    console.log(`❌ 房間緩存不存在: ${roomId}`);
+    return res.status(404).json({ error: '房間緩存不存在' });
+  }
+  
+  const fileData = roomBuffers.get(filename);
+  
+  if (!fileData) {
+    console.log(`❌ 檔案內容不存在: ${filename}`);
+    console.log(`📋 可用檔案緩存:`, Array.from(roomBuffers.keys()));
+    return res.status(404).json({ error: '檔案內容不存在' });
+  }
+  
+  console.log(`✅ 檔案服務成功: ${fileData.originalName} (${fileData.buffer.length} bytes)`);
   const roomBuffers = fileBuffers.get(roomId);
   const fileData = roomBuffers.get(filename);
   
   if (!fileData) {
     return res.status(404).json({ error: '檔案內容不存在' });
   }
-  
-  // 設置響應標頭
-  res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileData.originalName)}"`);
+    // 設置響應標頭 - 支援中文檔名
+  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(fileData.originalName)}`);
   res.setHeader('Content-Type', fileData.mimetype || 'application/octet-stream');
   res.setHeader('Content-Length', fileData.buffer.length);
-    // 發送檔案內容
+  res.setHeader('Cache-Control', 'no-cache');
+  
+  // 發送檔案內容
   res.send(fileData.buffer);
 });
 

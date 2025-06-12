@@ -211,9 +211,9 @@ const ShareAndUpload: React.FC<ShareAndUploadProps> = ({
     { id: 'url', label: '網址', icon: Link },
     { id: 'clipboard', label: '剪貼', icon: Clipboard },
     { id: 'voice', label: '語音', icon: Mic },
-  ] as const;return (
+  ] as const;  return (
     <div className="card h-full flex flex-col">
-      <h2 className="text-xl md:text-2xl font-bold mb-6 text-left">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6 text-left">
         上傳檔案
       </h2>
       
@@ -234,51 +234,53 @@ const ShareAndUpload: React.FC<ShareAndUploadProps> = ({
           </div>
         )}
 
-        {/* 標籤導航 - 改善樣式 */}
-        <div className="grid grid-cols-5 gap-1 p-1 bg-white rounded-xl mb-6 border border-gray-200 shadow-sm">
+        {/* 標籤導航 - 手機優化 */}
+        <div className="grid grid-cols-5 gap-0.5 sm:gap-1 p-1 bg-white rounded-xl mb-4 sm:mb-6 border border-gray-200 shadow-sm">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex flex-col items-center gap-1 ${
+                className={`relative px-1 sm:px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex flex-col items-center gap-0.5 sm:gap-1 ${
                   activeTab === tab.id
                     ? 'bg-blue-500 text-white shadow-md'
                     : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                 }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="text-[10px] leading-tight">{tab.label}</span>
+              >                <Icon className="w-3 sm:w-4 h-3 sm:h-4" />
+                <span className="text-[9px] sm:text-[10px] leading-tight">{tab.label}</span>
                 {activeTab === tab.id && (
                   <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>
                 )}
               </button>
             );
           })}
-        </div>        {/* 內容區域 - 固定高度避免拉伸 */}
-        <div className="h-80 flex flex-col">
+        </div>
+
+        {/* 內容區域 - 手機響應式高度 */}
+        <div className="h-72 sm:h-80 flex flex-col">
           {activeTab === 'upload' && (
-            <div className="h-full flex flex-col space-y-4">
-              <div className="flex-1 border-2 border-dashed border-blue-200 rounded-2xl p-6 text-center hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-300 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50/50 to-indigo-50/30">
+            <div className="h-full flex flex-col space-y-3 sm:space-y-4">
+              <div className="flex-1 border-2 border-dashed border-blue-200 rounded-2xl p-4 sm:p-6 text-center hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-300 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50/50 to-indigo-50/30">
                 <input
                   type="file"
                   id="file-upload"
                   className="hidden"
                   onChange={handleFileUpload}
                   disabled={isUploading}
+                  accept="*/*"
                 />
                 <label
                   htmlFor="file-upload"
-                  className={`cursor-pointer block text-center ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 transition-transform duration-200'}`}
+                  className={`cursor-pointer block text-center w-full ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 transition-transform duration-200'}`}
                 >
-                  <div className="mb-3">
-                    <Upload className="w-12 h-12 text-blue-400 mx-auto mb-2 animate-bounce" />
+                  <div className="mb-2 sm:mb-3">
+                    <Upload className="w-10 sm:w-12 h-10 sm:h-12 text-blue-400 mx-auto mb-2 animate-bounce" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    {isUploading ? '正在上傳...' : '拖拽或點擊上傳檔案'}
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">
+                    {isUploading ? '正在上傳...' : '點擊上傳檔案'}
                   </h3>
-                  <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed">
+                  <p className="text-xs sm:text-sm text-gray-600 max-w-xs mx-auto leading-relaxed">
                     支援所有檔案格式<br />
                     <span className="text-blue-600 font-medium">最大 100MB</span>
                   </p>
