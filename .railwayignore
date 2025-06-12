@@ -1,0 +1,15 @@
+client/
+node_modules/
+.git/
+*.md
+.env
+.env.example
+dev-mode-test.html
+qr-code-share-demo.html
+start-dev-mode-test.bat
+start-dev.bat
+test-*.js
+*.bat
+netlify.toml
+vercel.json
+render.yaml

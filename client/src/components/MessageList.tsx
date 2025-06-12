@@ -77,7 +77,6 @@ const MessageList: React.FC<MessageListProps> = ({ messages, className = '' }) =
       default: return MessageSquare;
     }
   };
-
   const getMessageTitle = (type: ShareMessage['type']) => {
     switch (type) {
       case 'text': return '文字訊息';
@@ -89,23 +88,12 @@ const MessageList: React.FC<MessageListProps> = ({ messages, className = '' }) =
     }
   };
 
-  const getMessageColor = (type: ShareMessage['type']) => {
-    switch (type) {
-      case 'text': return 'from-blue-500 to-blue-600';
-      case 'url': return 'from-green-500 to-green-600';
-      case 'clipboard': return 'from-purple-500 to-purple-600';
-      case 'voice': return 'from-red-500 to-pink-600';
-      case 'image': return 'from-yellow-500 to-orange-600';
-      default: return 'from-gray-500 to-gray-600';
-    }
-  };
-
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString('zh-TW', {
       hour: '2-digit',
       minute: '2-digit'
     });
-  };  if (messages.length === 0) {
+  };if (messages.length === 0) {
     return (
       <div className={`card flex flex-col ${className}`}>
         <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gradient-text">

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastTransfer 快速分享功能展示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 3rem 2rem;
+        }
+        
+        .feature {
+            background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .feature h3 {
+            color: #1e293b;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .feature p {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            color: #475569;
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .cta {
+            background: #f8fafc;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .cta h2 {
+            color: #1e293b;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .cta p {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #4f46e5;
+            border: 2px solid #4f46e5;
+        }
+        
+        .btn-secondary:hover {
+            background: #4f46e5;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 1rem 2rem;
+            text-align: center;
+            font-weight: 600;
+            border-left: 4px solid #16a34a;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+                padding: 2rem 1rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status">
+            ✅ 快速分享功能開發完成！所有新功能已成功整合並美化 UI
+        </div>
+        
+        <div class="header">
+            <h1>🚀 FastTransfer</h1>
+            <p>快速分享功能 - 全新升級版本</p>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">📝</div>
+                <h3>文字訊息即時分享</h3>
+                <p>快速發送文字訊息給房間內的所有成員，支援多行文字和即時顯示。</p>
+                <ul class="feature-list">
+                    <li>即時文字分享</li>
+                    <li>支援多行內容</li>
+                    <li>Enter 鍵快速發送</li>
+                    <li>美化的輸入介面</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🔗</div>
+                <h3>網址快速分享</h3>
+                <p>智能識別並分享網址連結，自動格式化 URL 並提供快速訪問。</p>
+                <ul class="feature-list">
+                    <li>智能 URL 驗證</li>
+                    <li>自動添加協議</li>
+                    <li>一鍵分享連結</li>
+                    <li>美觀的連結顯示</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📋</div>
+                <h3>剪貼簿內容同步</h3>
+                <p>一鍵同步剪貼簿內容到房間，讓跨設備內容傳輸變得輕鬆簡單。</p>
+                <ul class="feature-list">
+                    <li>一鍵讀取剪貼簿</li>
+                    <li>跨設備內容同步</li>
+                    <li>安全的內容傳輸</li>
+                    <li>即時內容顯示</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📸</div>
+                <h3>照片即拍即傳</h3>
+                <p>支援手機拍照或選擇相簿照片，即時分享給房間成員並提供預覽。</p>
+                <ul class="feature-list">
+                    <li>手機相機直拍</li>
+                    <li>相簿照片選擇</li>
+                    <li>即時照片預覽</li>
+                    <li>自動圖片優化</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🎤</div>
+                <h3>語音訊息錄製</h3>
+                <p>錄製語音訊息並即時分享，支援播放控制和語音檔案下載。</p>
+                <ul class="feature-list">
+                    <li>一鍵開始錄音</li>
+                    <li>即時語音分享</li>
+                    <li>語音檔案播放</li>
+                    <li>錄音狀態指示</li>
+                </ul>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">👁️</div>
+                <h3>檔案預覽功能</h3>
+                <p>支援多種檔案格式的即時預覽，包括圖片、影片、音頻、PDF 等。</p>
+                <ul class="feature-list">
+                    <li>圖片縮放旋轉</li>
+                    <li>影片音頻播放</li>
+                    <li>PDF 文件預覽</li>
+                    <li>文字檔案查看</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="cta">
+            <h2>🎉 功能開發完成</h2>
+            <p>所有快速分享功能已成功實現，UI 美化完成，準備進行最終測試！</p>
+            
+            <div class="btn-group">
+                <a href="http://localhost:5173" class="btn btn-primary" target="_blank">
+                    🚀 啟動應用程式
+                </a>
+                <a href="https://github.com/your-repo/fastransfer" class="btn btn-secondary" target="_blank">
+                    📚 查看源碼
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 檢查應用程式是否運行
+        async function checkApp() {
+            try {
+                const response = await fetch('http://localhost:5173');
+                if (response.ok) {
+                    document.querySelector('.status').innerHTML = '✅ 應用程式正在運行中！點擊上方按鈕開始測試新功能';
+                    document.querySelector('.status').style.background = '#dcfce7';
+                    document.querySelector('.status').style.color = '#16a34a';
+                }
+            } catch (error) {
+                document.querySelector('.status').innerHTML = '⚠️ 應用程式未啟動，請先運行 npm run dev';
+                document.querySelector('.status').style.background = '#fef3c7';
+                document.querySelector('.status').style.color = '#d97706';
+            }
+        }
+        
+        // 頁面載入時檢查應用程式狀態
+        window.addEventListener('load', checkApp);
+        
+        // 每5秒檢查一次
+        setInterval(checkApp, 5000);
+    </script>
+</body>
+</html>
