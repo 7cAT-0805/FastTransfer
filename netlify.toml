@@ -4,11 +4,11 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  VITE_API_URL = "https://fastransfer-backend.onrender.com"
+  VITE_API_URL = "https://fasttransfer-production.up.railway.app"
 
 [[redirects]]
   from = "/api/*"
-  to = "https://fastransfer-backend.onrender.com/api/:splat"
+  to = "https://fasttransfer-production.up.railway.app/api/:splat"
   status = 200
   force = true
 

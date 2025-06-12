@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 class SocketService {
   private socket: Socket | null = null;
   private currentRoomId: string | null = null;
-    connect(auth?: { hostId?: string }): Socket {
+  connect(auth?: { hostId?: string }): Socket {
     // 如果已經連接，直接返回現有連接
     if (this.socket && this.socket.connected) {
       return this.socket;
@@ -12,8 +12,8 @@ class SocketService {
     // 先斷開舊連接
     this.disconnect();
     
-    // 強制使用 Render 後端 URL
-    const serverUrl = 'https://fastransfer-backend.onrender.com';
+    // 更新為 Railway 後端 URL
+    const serverUrl = 'https://fasttransfer-production.up.railway.app';
     console.log('🔌 Socket connecting to:', serverUrl);
       this.socket = io(serverUrl, {
       transports: ['websocket', 'polling'],

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// 強制使用 Render 後端 URL
-const API_BASE_URL = 'https://fastransfer-backend.onrender.com';
+// 更新為 Railway 後端 URL
+const API_BASE_URL = 'https://fasttransfer-production.up.railway.app';
 
 // 除錯資訊
 console.log('🔧 API Configuration:');

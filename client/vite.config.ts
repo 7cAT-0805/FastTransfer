@@ -16,10 +16,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets'
-  },
-  define: {
+  },  define: {
     'import.meta.env.VITE_API_URL': JSON.stringify(
-      'https://fastransfer-backend.onrender.com'
+      'https://fasttransfer-production.up.railway.app'
     )
   }
 })
