@@ -13,7 +13,11 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: [
+      process.env.CORS_ORIGIN || "http://localhost:5173",
+      "https://fasttransfer.netlify.app",
+      "https://684a2ed84e42030008d66d5e--fasttransfer.netlify.app"
+    ],
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -27,10 +31,20 @@ app.set('trust proxy', 1);
 // 中間件
 app.use(helmet());
 app.use(compression());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-  credentials: true
-}));
+
+// 增強 CORS 配置
+const corsOptions = {
+  origin: [
+    process.env.CORS_ORIGIN || "http://localhost:5173",
+    "https://fasttransfer.netlify.app",
+    "https://684a2ed84e42030008d66d5e--fasttransfer.netlify.app" // Netlify 預覽 URL
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // 速率限制
@@ -63,6 +77,23 @@ const upload = multer({
 // API路由
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// 根路徑健康檢查（供前端直接訪問）
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// 根路徑歡迎訊息
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'FastTransfer API Server', 
+    status: 'OK',
+    endpoints: {
+      health: '/health',
+      api: '/api/health'
+    }
+  });
 });
 
 // 創建房間
