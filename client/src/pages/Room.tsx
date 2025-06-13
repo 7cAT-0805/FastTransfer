@@ -98,14 +98,15 @@ const Room: React.FC = () => {
 
         await waitForConnection();        // 定義事件處理器
         const handleFileUploaded = (fileInfo: FileInfo) => {
+          console.log('🔌 Socket 檔案上傳事件:', fileInfo);
           setFiles(prev => {
-            // 多重條件去重
-            const exists = prev.find(f =>
-              f.id === fileInfo.id ||
-              f.filename === fileInfo.filename ||
-              (f.originalName === fileInfo.originalName && f.size === fileInfo.size)
-            );
-            if (exists) return prev;
+            // 使用檔案 ID 作為主要去重標準，因為它是唯一的
+            const exists = prev.find(f => f.id === fileInfo.id);
+            if (exists) {
+              console.log('⚠️ 檔案已存在 (通過ID)，跳過重複添加:', fileInfo.originalName, 'ID:', fileInfo.id);
+              return prev;
+            }
+            console.log('✅ 通過 Socket 添加新檔案:', fileInfo.originalName, 'ID:', fileInfo.id);
             return [fileInfo, ...prev];
           });
         };
@@ -371,20 +372,14 @@ const Room: React.FC = () => {
         {/* 主內容區域 - 移動端響應式布局 */}
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
           {/* 左側：統一的上傳和分享區域 */}
-          <div className="lg:w-1/3">
-            <ShareAndUpload 
+          <div className="lg:w-1/3">            <ShareAndUpload 
               roomId={roomId!}
               onMessageSent={handleMessageSent}
               onFileUploaded={(file) => {
-                setFiles(prev => {
-                  const exists = prev.find(f =>
-                    f.id === file.id ||
-                    f.filename === file.filename ||
-                    (f.originalName === file.originalName && f.size === file.size)
-                  );
-                  if (exists) return prev;
-                  return [file, ...prev];
-                });
+                // 檔案上傳成功的提示，實際的檔案列表更新由 Socket.IO 事件處理
+                console.log('📤 檔案上傳完成，等待 Socket.IO 事件更新列表:', file.originalName);
+                toast.success(`檔案上傳成功: ${file.originalName}`);
+                // 不在這裡更新檔案列表，避免重複
               }}
             />
           </div>

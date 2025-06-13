@@ -129,8 +129,7 @@ export class DeveloperMode {
       </div>
     `;
     document.body.appendChild(overlay);
-  }
-  private initMockData() {
+  }  private initMockData() {
     this.mockData = {
       id: 'DEV12345',
       hostId: 'dev-host-001',
@@ -154,7 +153,13 @@ export class DeveloperMode {
         }
       ]
     };
-  }  private createDebugPanel() {
+    
+    // 為所有模擬檔案添加 filename 和 previewUrl 屬性
+    this.mockData.files.forEach(file => {
+      (file as any).filename = file.id;
+      (file as any).previewUrl = `/api/rooms/DEV12345/files/${file.id}`;
+    });
+  }private createDebugPanel() {
     this.debugPanel = document.createElement('div');
     this.debugPanel.className = 'fixed bottom-4 right-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900 text-white rounded-2xl shadow-2xl z-50 min-w-80 border border-indigo-500/30 backdrop-blur-sm';
     this.debugPanel.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #3730a3 50%, #1e40af 75%, #1e3a8a 100%)';
@@ -379,7 +384,6 @@ export class DeveloperMode {
     
     setTimeout(() => notification.remove(), 2000);
   }
-
   addMockFile() {
     if (!this.mockData) this.initMockData();
     
@@ -391,14 +395,19 @@ export class DeveloperMode {
     ];
     
     const randomFile = fileTypes[Math.floor(Math.random() * fileTypes.length)];
+    const fileId = `file-${Date.now()}`;
     const newFile = {
-      id: `file-${Date.now()}`,
+      id: fileId,
       originalName: randomFile.name,
       size: randomFile.size,
       uploadedAt: new Date().toISOString(),
       downloadUrl: `blob:mock-file-${Date.now()}`,
       mimetype: randomFile.mime
     };
+    
+    // 添加必要的屬性
+    (newFile as any).filename = fileId;
+    (newFile as any).previewUrl = `/api/rooms/DEV12345/files/${fileId}`;
     
     this.mockData!.files.push(newFile);
     this.updateDebugPanel();
@@ -482,11 +491,11 @@ export class DeveloperMode {
       success: true,
       files: this.mockData?.files || []
     };
-  }
-  async mockUploadFile(file: File): Promise<MockFile> {
+  }  async mockUploadFile(file: File): Promise<MockFile> {
     await this.delay(1000); // 模擬上傳時間
+    const fileId = `mock-${Date.now()}`;
     const mockFile: MockFile = {
-      id: `mock-${Date.now()}`,
+      id: fileId,
       originalName: file.name,
       size: file.size,
       uploadedAt: new Date().toISOString(),
@@ -494,8 +503,20 @@ export class DeveloperMode {
       mimetype: file.type || 'application/octet-stream'
     };
     
+    // 確保檔案有 filename 屬性（用於 API 路徑）
+    (mockFile as any).filename = fileId;
+    (mockFile as any).previewUrl = `/api/rooms/DEV12345/files/${fileId}`;
+    
     this.mockData?.files.push(mockFile);
     this.updateDebugPanel();
+    
+    // 觸發檔案上傳事件
+    const event = new CustomEvent('devModeFileAdded', { 
+      detail: { file: mockFile } 
+    });
+    window.dispatchEvent(event);
+    
+    console.log('🛠️ 開發者模式: 模擬上傳檔案', mockFile.originalName);
     return mockFile;
   }
   private async delay(ms: number): Promise<void> {

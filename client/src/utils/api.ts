@@ -83,9 +83,15 @@ export const apiWrapper = {
         return { data: await devMode.mockCreateRoom() };
       } else if (url.includes('/join')) {
         const roomId = url.split('/')[2];
-        return { data: await devMode.mockJoinRoom(roomId) };
-      } else if (url.includes('/upload')) {
-        return { data: await devMode.mockUploadFile(data.get ? data.get('file') : data.file) };
+        return { data: await devMode.mockJoinRoom(roomId) };      } else if (url.includes('/upload')) {
+        const uploadedFile = await devMode.mockUploadFile(data.get ? data.get('file') : data.file);
+        return { 
+          data: { 
+            success: true, 
+            message: '檔案上傳成功', 
+            file: uploadedFile 
+          } 
+        };
       }
       
       // 默認模擬響應

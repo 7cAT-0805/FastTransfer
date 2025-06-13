@@ -172,12 +172,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
             <X className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
           </button>
         </div>
-      </div>      {/* 主要內容區域 - 充滿整個屏幕 */}
-      <div className={`flex-1 flex items-center justify-center p-8 pt-32 transition-all duration-500 ${
+      </div>      {/* 主要內容區域 - 優化預覽顯示 */}
+      <div className={`flex-1 flex items-center justify-center p-4 sm:p-8 pt-24 sm:pt-32 transition-all duration-500 ${
         isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-      }`}>
+      }`} style={{ height: 'calc(100vh - 120px)' }}>
         {isImage && file.previewUrl && (
-          <div className="relative w-full h-full flex items-center justify-center group">            {/* 載入指示器 */}
+          <div className="relative w-full h-full flex items-center justify-center group preview-container">{/* 載入指示器 */}
             {!imageLoaded && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="flex flex-col items-center space-y-4 text-white">
@@ -186,14 +186,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
                   <p className="text-sm opacity-60">正在載入檔案: {file.originalName}</p>
                 </div>
               </div>
-            )}
-
-            {/* 圖片容器 */}
-            <div className={`relative max-w-full max-h-full transition-all duration-700 ${
+            )}            {/* 圖片容器 - 優化顯示比例 */}
+            <div className={`relative flex items-center justify-center w-full h-full transition-all duration-700 ${
               imageLoaded 
                 ? 'opacity-100 scale-100 translate-y-0' 
                 : 'opacity-0 scale-95 translate-y-4'
-            }`}>
+            }`} style={{ maxHeight: 'calc(100vh - 200px)', maxWidth: 'calc(100vw - 100px)' }}>
               <img
                 src={file.previewUrl}
                 alt={file.originalName}
@@ -204,10 +202,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
                   cursor: zoom > 100 ? 'grab' : 'zoom-in',
                   filter: `drop-shadow(0 25px 50px rgba(0, 0, 0, 0.5)) ${
                     zoom > 100 ? 'brightness(1.05) contrast(1.02)' : ''
-                  }`
+                  }`,
+                  minHeight: '200px',
+                  minWidth: '200px'
                 }}
                 onClick={() => zoom === 100 ? handleZoomIn() : handleZoomOut()}
-                draggable={false}                onLoad={() => {
+                draggable={false}onLoad={() => {
                   console.log('✅ 圖片載入成功:', file.originalName);
                   setImageLoaded(true);
                 }}

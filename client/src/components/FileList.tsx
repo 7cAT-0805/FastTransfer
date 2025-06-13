@@ -141,9 +141,7 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
         <span className="ml-2 text-sm font-normal text-gray-500">
           ({files.length} 個檔案, {messages.length} 個分享)
         </span>
-      </h2>
-
-      <div className="flex-1 flex flex-col">
+      </h2>      <div className="flex-1 flex flex-col">
         {allItems.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
@@ -151,10 +149,14 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
               <p className="text-gray-500 text-lg">尚無內容</p>
               <p className="text-gray-400 text-sm mt-2">
                 開始上傳檔案或分享內容
-              </p>            </div>
+              </p>
+            </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto space-y-3 pr-2" style={{ maxHeight: 'calc(100vh - 250px)' }}>
+          <div 
+            className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100" 
+            style={{ height: '524.5px', maxHeight: '524.5px' }}
+          >
             <div className="space-y-3">
               {allItems.map((item, index) => (
                 <div key={index}>

@@ -1,9 +1,9 @@
+/* 導入開發者模式樣式 */
+@import './styles/developer-mode.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* 導入開發者模式樣式 */
-@import './styles/developer-mode.css';
 
 @layer base {
   body {
@@ -359,5 +359,54 @@
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* 自定義滾動條樣式 */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+    transition: background 0.2s ease;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
+  /* 檔案列表容器優化 */
+  .file-list-container {
+    height: 524.5px;
+    max-height: 524.5px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  
+  /* 預覽窗口優化 */
+  .preview-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .preview-image {
+    max-width: calc(100vw - 100px);
+    max-height: calc(100vh - 200px);
+    object-fit: contain;
   }
 }
