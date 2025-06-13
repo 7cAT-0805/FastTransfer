@@ -88,33 +88,54 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
       previewUrl: `/api/rooms/${roomId}/files/${file.filename}`
     };
     setPreviewFile(fileWithPreview);
-  };
-  const canPreview = (file: FileInfo) => {
+  };  const canPreview = (file: FileInfo) => {
     const previewableTypes = [
-      'image/', 
-      'video/', 
-      'audio/', 
-      'text/', 
+      // 圖片類型
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp',
+      // 影片類型
+      'video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov', 'video/wmv',
+      // 音頻類型
+      'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a', 'audio/aac', 'audio/flac',
+      // 文檔類型
       'application/pdf',
-      'application/json', 
-      'application/xml',
-      'application/javascript',
-      'text/plain',
-      'text/html',
-      'text/css'
+      // 文字類型
+      'text/plain', 'text/html', 'text/css', 'text/javascript', 'text/typescript',
+      'application/json', 'application/xml', 'application/javascript',
+      // 程式碼類型
+      'text/x-python', 'text/x-java', 'text/x-c', 'text/x-cpp',
+      // Office 文檔（部分支援）
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
     ];
     
+    // 檢查是否為可預覽的類型
     const isPreviewable = previewableTypes.some(type => 
-      file.mimetype.startsWith(type) || file.mimetype.includes(type)
+      file.mimetype === type || file.mimetype.startsWith(type.split('/')[0] + '/')
     );
+    
+    // 額外檢查文件擴展名
+    const extension = file.originalName.toLowerCase().split('.').pop();
+    const previewableExtensions = [
+      'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp',
+      'mp4', 'webm', 'ogg', 'avi', 'mov',
+      'mp3', 'wav', 'ogg', 'm4a', 'aac',
+      'pdf', 'txt', 'html', 'css', 'js', 'ts', 'json', 'xml',
+      'py', 'java', 'c', 'cpp', 'md', 'yaml', 'yml'
+    ];
+    
+    const extensionMatch = extension && previewableExtensions.includes(extension);
     
     console.log(`🔍 檢查檔案是否可預覽:`, {
       filename: file.originalName,
       mimetype: file.mimetype,
-      isPreviewable
+      extension,
+      typeMatch: isPreviewable,
+      extensionMatch,
+      canPreview: isPreviewable || extensionMatch
     });
     
-    return isPreviewable;
+    return isPreviewable || extensionMatch;
   };
 
   const formatDate = (date: Date | string) => {

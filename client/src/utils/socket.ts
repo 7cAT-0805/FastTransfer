@@ -18,9 +18,10 @@ class SocketService {
     
     // 先斷開舊連接
     this.disconnect();
-    
-    // 更新為 Railway 後端 URL
-    const serverUrl = 'https://fasttransfer-production.up.railway.app';
+      // 根據設置決定連接本地還是雲端後端
+    const serverUrl = localStorage.getItem('fastransfer_use_local') === 'true' 
+      ? 'http://localhost:3001' 
+      : 'https://fasttransfer-production.up.railway.app';
     if (this.devMode.isEnabled()) {
       console.log('🔌 Socket connecting to:', serverUrl);
     }

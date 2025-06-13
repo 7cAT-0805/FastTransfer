@@ -56,18 +56,34 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
       document.documentElement.classList.remove('preview-active');
     };
   }, []);
-
   const isImage = file.mimetype.startsWith('image/');
   const isVideo = file.mimetype.startsWith('video/');
   const isAudio = file.mimetype.startsWith('audio/');
-  const isText = file.mimetype.startsWith('text/') || file.mimetype.includes('json');
+  const isText = file.mimetype.startsWith('text/') || file.mimetype.includes('json') || file.mimetype.includes('xml') || file.mimetype.includes('javascript');
   const isPDF = file.mimetype.includes('pdf');
-
+  const isOfficeDoc = file.mimetype.includes('officedocument');
+  
+  // 根據文件擴展名進行額外判斷
+  const extension = file.originalName.toLowerCase().split('.').pop();
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+  const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov'];
+  const audioExtensions = ['mp3', 'wav', 'ogg', 'm4a', 'aac'];
+  const textExtensions = ['txt', 'md', 'json', 'xml', 'html', 'css', 'js', 'ts', 'py', 'java', 'c', 'cpp'];
+  
+  const isImageByExt = extension && imageExtensions.includes(extension);
+  const isVideoByExt = extension && videoExtensions.includes(extension);
+  const isAudioByExt = extension && audioExtensions.includes(extension);
+  const isTextByExt = extension && textExtensions.includes(extension);
+  
+  const finalIsImage = isImage || isImageByExt;
+  const finalIsVideo = isVideo || isVideoByExt;
+  const finalIsAudio = isAudio || isAudioByExt;
+  const finalIsText = isText || isTextByExt;
   const getFileIcon = () => {
-    if (isImage) return ImageIcon;
-    if (isVideo) return Video;
-    if (isAudio) return Music;
-    if (isText || isPDF) return FileText;
+    if (finalIsImage) return ImageIcon;
+    if (finalIsVideo) return Video;
+    if (finalIsAudio) return Music;
+    if (finalIsText || isPDF) return FileText;
     return File;
   };
 
@@ -120,11 +136,9 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
               {formatFileSize(file.size)} • {file.mimetype.split('/')[0].toUpperCase()}
             </p>
           </div>
-        </div>
-
-        {/* 右側控制按鈕 */}
+        </div>        {/* 右側控制按鈕 */}
         <div className="flex items-center space-x-3 bg-black/80 backdrop-blur-xl rounded-2xl px-4 py-4 shadow-2xl border border-white/10 transform hover:scale-105 transition-all duration-300">
-          {isImage && (
+          {finalIsImage && (
             <div className="flex items-center space-x-2 border-r border-white/20 pr-3">
               <button
                 onClick={handleZoomOut}
@@ -175,8 +189,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
       </div>      {/* 主要內容區域 - 優化預覽顯示 */}
       <div className={`flex-1 flex items-center justify-center p-4 sm:p-8 pt-24 sm:pt-32 transition-all duration-500 ${
         isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-      }`} style={{ height: 'calc(100vh - 120px)' }}>
-        {isImage && file.previewUrl && (
+      }`} style={{ height: 'calc(100vh - 120px)' }}>        {finalIsImage && file.previewUrl && (
           <div className="relative w-full h-full flex items-center justify-center group preview-container">{/* 載入指示器 */}
             {!imageLoaded && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -186,25 +199,27 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
                   <p className="text-sm opacity-60">正在載入檔案: {file.originalName}</p>
                 </div>
               </div>
-            )}            {/* 圖片容器 - 優化顯示比例 */}
-            <div className={`relative flex items-center justify-center w-full h-full transition-all duration-700 ${
+            )}            {/* 圖片容器 - 完美居中 */}
+            <div className={`flex items-center justify-center w-full h-full transition-all duration-700 ${
               imageLoaded 
                 ? 'opacity-100 scale-100 translate-y-0' 
                 : 'opacity-0 scale-95 translate-y-4'
-            }`} style={{ maxHeight: 'calc(100vh - 200px)', maxWidth: 'calc(100vw - 100px)' }}>
+            }`}>
               <img
                 src={file.previewUrl}
                 alt={file.originalName}
                 className="max-w-full max-h-full object-contain select-none rounded-2xl shadow-2xl transition-all duration-500 ease-out"
                 style={{
                   transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
-                  transformOrigin: 'center',
+                  transformOrigin: 'center center',
                   cursor: zoom > 100 ? 'grab' : 'zoom-in',
                   filter: `drop-shadow(0 25px 50px rgba(0, 0, 0, 0.5)) ${
                     zoom > 100 ? 'brightness(1.05) contrast(1.02)' : ''
                   }`,
-                  minHeight: '200px',
-                  minWidth: '200px'
+                  maxWidth: '90vw',
+                  maxHeight: '80vh',
+                  minHeight: 'auto',
+                  minWidth: 'auto'
                 }}
                 onClick={() => zoom === 100 ? handleZoomIn() : handleZoomOut()}
                 draggable={false}onLoad={() => {
@@ -242,7 +257,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
                   style={{
                     background: `radial-gradient(circle at center, transparent 60%, rgba(59, 130, 246, 0.3) 100%)`,
                     transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
-                    transformOrigin: 'center',
+                    transformOrigin: 'center center',
                     transition: 'all 0.5s ease-out'
                   }}
                 />
@@ -267,7 +282,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
           </div>
         )}
 
-        {isVideo && file.previewUrl && (
+        {finalIsVideo && file.previewUrl && (
           <div className="relative w-full h-full flex items-center justify-center">
             <video
               controls
@@ -281,7 +296,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
           </div>
         )}
 
-        {isAudio && file.previewUrl && (
+        {finalIsAudio && file.previewUrl && (
           <div className="w-full max-w-2xl">
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 shadow-2xl border border-gray-700">
               <div className="flex items-center space-x-6 mb-6">
@@ -314,21 +329,43 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
               style={{ minHeight: 'calc(100vh - 8rem)' }}
             />
           </div>
-        )}
-
-        {isText && file.previewUrl && (
+        )}        {(finalIsText || isOfficeDoc) && file.previewUrl && (
           <div className="w-full h-full max-w-6xl">
             <div className="bg-white rounded-xl shadow-2xl h-full">
-              <iframe
-                src={file.previewUrl}
-                className="w-full h-full border-0 rounded-xl"
-                title={file.originalName}
-              />
+              {isOfficeDoc ? (
+                <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                  <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                    <FileText className="w-16 h-16 text-white" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-gray-800 mb-4">
+                    Office 文檔預覽
+                  </h4>
+                  <p className="text-gray-600 mb-4 text-lg">
+                    {file.originalName}
+                  </p>
+                  <p className="text-gray-500 mb-8">
+                    此檔案類型需要下載後使用 Office 軟體開啟
+                  </p>
+                  <button
+                    onClick={onDownload}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl flex items-center space-x-3 transition-all transform hover:scale-105 shadow-lg"
+                  >
+                    <Download className="w-5 h-5" />
+                    <span className="text-lg font-medium">下載檔案</span>
+                  </button>
+                </div>
+              ) : (
+                <iframe
+                  src={file.previewUrl}
+                  className="w-full h-full border-0 rounded-xl"
+                  title={file.originalName}
+                />
+              )}
             </div>
           </div>
         )}
 
-        {!isImage && !isVideo && !isAudio && !isPDF && !isText && (
+        {!finalIsImage && !finalIsVideo && !finalIsAudio && !isPDF && !finalIsText && !isOfficeDoc && (
           <div className="text-center text-white">
             <div className="w-32 h-32 bg-gradient-to-br from-gray-700 to-gray-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
               <File className="w-16 h-16 text-gray-400" />
@@ -357,7 +394,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
         <div className="bg-black/70 backdrop-blur-md rounded-lg px-4 py-2 text-gray-300 text-sm">
           <span>按 ESC 關閉</span>
-          {isImage && <span> • 點擊圖片縮放 • 使用 +/- 鍵縮放 • R 鍵旋轉</span>}        </div>
+          {finalIsImage && <span> • 點擊圖片縮放 • 使用 +/- 鍵縮放 • R 鍵旋轉</span>}        </div>
       </div>
     </div>
   );

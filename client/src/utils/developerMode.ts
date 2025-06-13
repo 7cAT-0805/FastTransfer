@@ -77,7 +77,6 @@ export class DeveloperMode {
       }
     ];
   }
-
   private initConsoleActivation() {
     // 添加控制台啟用方式，需要密碼 5168
     (window as any).DevMode_7cAT = (password?: number) => {
@@ -88,6 +87,24 @@ export class DeveloperMode {
       
       console.log('🛠️ 密碼正確，正在啟用開發者模式...');
       this.enableDeveloperMode();
+      return true;
+    };
+
+    // 添加直接連接本地後端的選項
+    (window as any).ConnectLocal = () => {
+      console.log('🔌 切換到本地後端模式...');
+      localStorage.setItem('fastransfer_use_local', 'true');
+      localStorage.removeItem('fastransfer_dev_mode');
+      location.reload();
+      return true;
+    };
+
+    // 添加切換回雲端後端的選項
+    (window as any).ConnectCloud = () => {
+      console.log('☁️ 切換到雲端後端模式...');
+      localStorage.removeItem('fastransfer_use_local');
+      localStorage.removeItem('fastransfer_dev_mode');
+      location.reload();
       return true;
     };
 
@@ -175,9 +192,7 @@ export class DeveloperMode {
                   class="text-gray-400 hover:text-white hover:bg-white/10 rounded-full w-8 h-8 flex items-center justify-center transition-all backdrop-blur-sm">
             ✕
           </button>
-        </div>
-
-        <!-- 角色切換區域 -->
+        </div>        <!-- 角色切換區域 -->
         <div class="mb-4 p-4 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl border border-blue-500/30 backdrop-blur-sm">
           <div class="text-sm text-blue-200 mb-3 font-medium">👤 當前視角</div>
           <div class="flex space-x-2">
@@ -192,6 +207,24 @@ export class DeveloperMode {
           </div>
           <div class="mt-2 text-xs text-center text-blue-300/80">
             ${this.isHost ? '📤 可上傳檔案、管理房間' : '📥 只能下載檔案、查看內容'}
+          </div>
+        </div>
+
+        <!-- 後端連接模式切換 -->
+        <div class="mb-4 p-4 bg-gradient-to-r from-green-900/50 to-blue-900/50 rounded-xl border border-green-500/30 backdrop-blur-sm">
+          <div class="text-sm text-green-200 mb-3 font-medium">🔌 後端連接模式</div>
+          <div class="flex space-x-2 mb-2">
+            <button onclick="window.ConnectLocal()" 
+                    class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 shadow-lg ${localStorage.getItem('fastransfer_use_local') === 'true' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-blue-500/30' : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'}">
+              🔌 本地後端
+            </button>
+            <button onclick="window.ConnectCloud()" 
+                    class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 shadow-lg ${localStorage.getItem('fastransfer_use_local') !== 'true' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-500/30' : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'}">
+              ☁️ 雲端後端
+            </button>
+          </div>
+          <div class="text-xs text-center text-green-300/80">
+            ${localStorage.getItem('fastransfer_use_local') === 'true' ? '🔌 localhost:3001' : '☁️ Railway 雲端服務'}
           </div>
         </div>
 

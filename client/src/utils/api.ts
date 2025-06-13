@@ -1,8 +1,13 @@
 import axios from 'axios';
 import { DeveloperMode } from './developerMode';
 
-// 更新為 Railway 後端 URL
-const API_BASE_URL = 'https://fasttransfer-production.up.railway.app';
+// 根據設置決定使用本地還是雲端後端
+const getApiBaseUrl = () => {
+  if (localStorage.getItem('fastransfer_use_local') === 'true') {
+    return 'http://localhost:3001';
+  }
+  return 'https://fasttransfer-production.up.railway.app';
+};
 
 // 初始化開發者模式
 const devMode = DeveloperMode.getInstance();
@@ -11,13 +16,14 @@ const devMode = DeveloperMode.getInstance();
 if (devMode.isEnabled()) {
   console.log('🔧 API Configuration:');
   console.log('Environment:', import.meta.env.MODE);
-  console.log('API_BASE_URL:', API_BASE_URL);
+  console.log('API_BASE_URL:', getApiBaseUrl());
   console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL);
   console.log('Developer Mode:', devMode.isEnabled() ? '🛠️ ENABLED' : '❌ DISABLED');
+  console.log('Local Backend:', localStorage.getItem('fastransfer_use_local') === 'true' ? '🔌 ENABLED' : '☁️ DISABLED');
 }
 
 export const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: `${getApiBaseUrl()}/api`,
   timeout: 30000,
   withCredentials: false,
 });
