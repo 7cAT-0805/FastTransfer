@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { MessageSquare, Link, Clipboard, Mic, Send } from 'lucide-react';
+import { MessageSquare, Link, Clipboard, Mic, Send, Sparkles } from 'lucide-react';
 import { ShareMessage } from '../types';
 
 interface QuickShareProps {
@@ -129,30 +129,31 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
     { id: 'clipboard', label: '剪貼簿', icon: Clipboard },
     { id: 'voice', label: '語音', icon: Mic }
   ];  return (
-    <div className="card flex flex-col">      <h2 className="text-xl md:text-2xl font-bold mb-6 text-left">
+    <div className="card flex flex-col">
+      <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gradient-text">
+        <Sparkles className="w-6 h-6 mr-3" />
         快速分享
-      </h2>
-      
+      </h2>      
       <div className="mb-6">
-        <div className="grid grid-cols-2 gap-1.5 p-1 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+        <div className="grid grid-cols-2 gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`group relative flex flex-col items-center justify-center py-2 px-2 rounded-md text-sm font-medium transition-all duration-300 transform ${
+                className={`group relative flex flex-col items-center justify-center py-3 px-3 rounded-xl text-sm font-medium transition-all duration-300 transform ${
                   activeTab === tab.id
-                    ? 'bg-white text-primary-600 shadow-sm scale-101 border border-primary-200'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50 hover:scale-100'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105 border border-blue-400'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/80 hover:scale-102 bg-white/50'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 mb-1 transition-transform duration-300 ${
+                <Icon className={`w-5 h-5 mb-1 transition-transform duration-300 ${
                   activeTab === tab.id ? 'scale-110' : 'group-hover:scale-105'
                 }`} />
-                <span className="text-xs font-medium">{tab.label}</span>
+                <span className="text-xs font-semibold">{tab.label}</span>
                 {activeTab === tab.id && (
-                  <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-4 h-0.5 bg-primary-500 rounded-full"></div>
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-white rounded-full opacity-80"></div>
                 )}
               </button>
             );
@@ -160,14 +161,14 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
         </div>
       </div>      <div className="flex-1 min-h-0 overflow-y-auto">
         {activeTab === 'text' && (
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100 space-y-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                <MessageSquare className="w-3 h-3 text-white" />
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200 shadow-sm space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <MessageSquare className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 text-xs">文字訊息</h3>
-                <p className="text-xs text-gray-600">分享文字內容到房間</p>
+                <h3 className="font-bold text-gray-900 text-sm">文字訊息分享</h3>
+                <p className="text-sm text-gray-600">將文字內容即時分享到房間</p>
               </div>
             </div>
             
@@ -176,31 +177,29 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 placeholder="輸入要分享的文字訊息..."
-                className="w-full p-2.5 border-2 border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-sm"
-                rows={3}
+                className="w-full p-4 border-2 border-blue-200 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 bg-white/90 backdrop-blur-sm text-sm shadow-sm"
+                rows={4}
               />
             </div>
             
             <button
               onClick={sendTextMessage}
               disabled={!textInput.trim()}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-semibold py-2.5 px-3 rounded-md transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md transform hover:scale-101 disabled:transform-none disabled:shadow-none text-sm"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-300 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105 disabled:transform-none disabled:shadow-none text-sm"
             >
-              <Send className="w-3.5 h-3.5 mr-1.5" />
+              <Send className="w-4 h-4 mr-2" />
               發送文字訊息
             </button>
           </div>
-        )}
-
-        {activeTab === 'url' && (
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100 space-y-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                <Link className="w-3 h-3 text-white" />
+        )}        {activeTab === 'url' && (
+          <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-5 border border-green-200 shadow-sm space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Link className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 text-xs">網址分享</h3>
-                <p className="text-xs text-gray-600">分享網址連結到房間</p>
+                <h3 className="font-bold text-gray-900 text-sm">網址連結分享</h3>
+                <p className="text-sm text-gray-600">將網址連結即時分享到房間</p>
               </div>
             </div>
             
@@ -209,40 +208,36 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
                 type="url"
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
-                placeholder="https://example.com"
-                className="w-full p-2.5 border-2 border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-sm"
+                placeholder="https://example.com 或 example.com"
+                className="w-full p-4 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 bg-white/90 backdrop-blur-sm text-sm shadow-sm"
               />
             </div>
             
             <button
               onClick={sendUrlMessage}
               disabled={!urlInput.trim()}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-semibold py-2.5 px-3 rounded-md transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md transform hover:scale-101 disabled:transform-none disabled:shadow-none text-sm"
-            >
-              <Link className="w-3.5 h-3.5 mr-1.5" />
-              分享網址
+              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-300 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105 disabled:transform-none disabled:shadow-none text-sm"            >
+              <Link className="w-4 h-4 mr-2" />
+              分享網址連結
             </button>
           </div>
-        )}
-
-        {activeTab === 'clipboard' && (
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100 space-y-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                <Clipboard className="w-3 h-3 text-white" />
+        )}        {activeTab === 'clipboard' && (
+          <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-5 border border-purple-200 shadow-sm space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Clipboard className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 text-xs">剪貼簿同步</h3>
-                <p className="text-xs text-gray-600">分享剪貼簿內容到房間</p>
+                <h3 className="font-bold text-gray-900 text-sm">剪貼簿內容分享</h3>
+                <p className="text-sm text-gray-600">將剪貼簿內容同步到房間</p>
               </div>
             </div>
-            
-            <div className="bg-white/70 backdrop-blur-sm rounded-md p-2.5 border border-blue-200">
-              <div className="flex items-start space-x-2">
-                <Clipboard className="w-3 h-3 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 border border-purple-200 shadow-sm">
+              <div className="flex items-start space-x-3">
+                <Clipboard className="w-5 h-5 text-purple-600 flex-shrink-0" />
                 <div>
-                  <p className="text-xs font-medium text-blue-800">一鍵分享</p>
-                  <p className="text-xs text-blue-600 mt-0.5">
+                  <p className="text-sm text-purple-700 font-medium">點擊下方按鈕讀取剪貼簿</p>
+                  <p className="text-xs text-purple-600 mt-1">
                     將您剪貼簿中的內容快速分享到房間
                   </p>
                 </div>
@@ -251,52 +246,48 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
             
             <button
               onClick={shareClipboard}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-3 rounded-md transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md transform hover:scale-101 text-sm"
-            >
-              <Clipboard className="w-3.5 h-3.5 mr-1.5" />
+              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105 text-sm"
+            >              <Clipboard className="w-4 h-4 mr-2" />
               分享剪貼簿內容
             </button>
           </div>
-        )}
-
-        {activeTab === 'voice' && (
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100 space-y-3">
-            <div className="flex items-center space-x-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+        )}        {activeTab === 'voice' && (
+          <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-5 border border-red-200 shadow-sm space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 ${
                 isRecording 
-                  ? 'bg-blue-500 animate-pulse' 
-                  : 'bg-blue-500'
+                  ? 'bg-gradient-to-r from-red-600 to-pink-600 animate-pulse' 
+                  : 'bg-gradient-to-r from-red-500 to-pink-500'
               }`}>
-                <Mic className="w-3 h-3 text-white" />
+                <Mic className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 text-xs">語音訊息</h3>
-                <p className="text-xs text-gray-600">
-                  {isRecording ? '正在錄音中...' : '錄製語音並分享到房間'}
+                <h3 className="font-bold text-gray-900 text-sm">語音訊息錄製</h3>
+                <p className="text-sm text-gray-600">
+                  {isRecording ? '正在錄音中...' : '錄製語音並即時分享到房間'}
                 </p>
               </div>
             </div>
             
-            <div className="bg-white/70 backdrop-blur-sm rounded-md p-3 border border-blue-200">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 border border-red-200 shadow-sm">
               <div className="text-center">
                 {isRecording ? (
-                  <div className="space-y-2">
-                    <div className="w-8 h-8 mx-auto bg-blue-500 rounded-full flex items-center justify-center animate-pulse">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                  <div className="space-y-3">
+                    <div className="w-16 h-16 mx-auto bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                      <div className="w-4 h-4 bg-white rounded-full"></div>
                     </div>
-                    <div>
-                      <p className="text-blue-600 font-medium text-xs">正在錄音中...</p>
-                      <p className="text-xs text-blue-500">點擊停止按鈕完成錄製</p>
+                    <div>                      <p className="text-red-600 font-semibold text-sm">正在錄音中...</p>
+                      <p className="text-red-500 text-xs">點擊停止按鈕完成錄製</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <div className="w-8 h-8 mx-auto bg-blue-500 rounded-full flex items-center justify-center">
-                      <Mic className="w-3.5 h-3.5 text-white" />
+                  <div className="space-y-3">
+                    <div className="w-16 h-16 mx-auto bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                      <Mic className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                      <p className="text-gray-800 font-medium text-xs">準備錄音</p>
-                      <p className="text-xs text-gray-600">點擊下方按鈕開始錄製語音訊息</p>
+                      <p className="text-gray-800 font-semibold text-sm">準備錄製語音</p>
+                      <p className="text-gray-600 text-xs">點擊下方按鈕開始錄製語音訊息</p>
                     </div>
                   </div>
                 )}
@@ -306,17 +297,16 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
             {isRecording ? (
               <button
                 onClick={stopRecording}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-3 rounded-md transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md transform hover:scale-101 text-sm"
-              >
-                <div className="w-3 h-3 mr-1.5 bg-white rounded-full animate-pulse"></div>
+                className="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105 text-sm animate-pulse"              >
+                <div className="w-3 h-3 mr-2 bg-white rounded-full animate-pulse"></div>
                 停止錄音
               </button>
             ) : (
               <button
                 onClick={startRecording}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-3 rounded-md transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md transform hover:scale-101 text-sm"
+                className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105 text-sm"
               >
-                <Mic className="w-3.5 h-3.5 mr-1.5" />
+                <Mic className="w-4 h-4 mr-2" />
                 開始錄音
               </button>
             )}

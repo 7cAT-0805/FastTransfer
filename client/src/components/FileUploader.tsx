@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
-import { Upload, X, FileText, AlertCircle } from 'lucide-react';
+import { Upload, X, FileText, AlertCircle, Sparkles } from 'lucide-react';
 import { apiWrapper } from '../utils/api';
 import { formatFileSize } from '../utils/helpers';
 
@@ -141,35 +141,48 @@ const FileUploader: React.FC<FileUploaderProps> = ({ roomId }) => {
   const openFileDialog = () => {
     fileInputRef.current?.click();
   };
-
   return (
-    <div className="card h-full flex flex-col">      <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center text-gray-800">
-        <Upload className="w-6 h-6 mr-3" />
-        上傳檔案
+    <div className="card h-full flex flex-col">
+      <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gradient-text">
+        <Sparkles className="w-6 h-6 mr-3" />
+        檔案上傳
       </h2>
 
       <div className="flex-1 flex flex-col">        {selectedFiles.length === 0 ? (
           <div>
             <div
-              className={`upload-zone ${isDragging ? 'dragging' : ''}`}
+              className={`upload-zone transition-all duration-300 transform ${
+                isDragging 
+                  ? 'border-blue-500 bg-blue-50 scale-105 shadow-lg' 
+                  : 'border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 hover:border-blue-400'
+              }`}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={openFileDialog}
-            >              <div className="text-center">
-                <Upload className={`w-16 h-16 mx-auto mb-4 transition-colors duration-200 ${
-                  isDragging ? 'text-blue-600' : 'text-gray-400'
-                }`} />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  {isDragging ? '放開以上傳檔案' : '拖拽檔案到此處'}
+            >
+              <div className="text-center py-8">
+                <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  isDragging 
+                    ? 'bg-blue-500 text-white animate-bounce' 
+                    : 'bg-gradient-to-r from-blue-100 to-purple-100 text-blue-500 hover:from-blue-200 hover:to-purple-200'
+                }`}>
+                  <Upload className="w-10 h-10" />
+                </div>
+                <h3 className={`text-2xl font-bold mb-3 transition-colors duration-300 ${
+                  isDragging ? 'text-blue-700' : 'text-gray-700'
+                }`}>
+                  {isDragging ? '放開檔案開始上傳' : '拖拽檔案到此處'}
                 </h3>
-                <p className="text-gray-500 mb-4">
-                  或 <span className="text-blue-600 cursor-pointer">點擊選擇檔案</span>
+                <p className="text-gray-600 mb-4 text-lg">
+                  或 <span className="text-blue-600 font-semibold cursor-pointer hover:text-blue-700">點擊選擇檔案</span>
                 </p>
-                <p className="text-sm text-gray-400">
-                  支援多個檔案，最大 100MB
-                </p>
+                <div className="inline-flex items-center space-x-4 text-sm text-gray-500">
+                  <span className="bg-gray-200 px-3 py-1 rounded-full">支援多檔案</span>
+                  <span className="bg-gray-200 px-3 py-1 rounded-full">最大 100MB</span>
+                  <span className="bg-gray-200 px-3 py-1 rounded-full">所有格式</span>
+                </div>
               </div>
             </div>
             
@@ -181,54 +194,71 @@ const FileUploader: React.FC<FileUploaderProps> = ({ roomId }) => {
               accept="*/*"
               multiple
             />
-          </div>
-        ) : (
-          <div className="space-y-6 flex-1 flex flex-col">            {/* 檔案列表標題 */}
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                已選擇的檔案 ({selectedFiles.length})
+          </div>        ) : (
+          <div className="space-y-6 flex-1 flex flex-col">
+            {/* 檔案列表標題 */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                <FileText className="w-5 h-5 mr-2 text-blue-500" />
+                已選擇的檔案 
+                <span className="ml-2 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm font-medium">
+                  {selectedFiles.length}
+                </span>
               </h3>
-            </div>{/* 檔案列表 */}
-            <div className="space-y-3 flex-1 overflow-y-auto max-h-80">
+              <button
+                onClick={openFileDialog}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center"
+              >
+                <Upload className="w-4 h-4 mr-1" />
+                添加更多
+              </button>
+            </div>
+
+            {/* 檔案列表 */}
+            <div className="space-y-3 flex-1 overflow-y-auto max-h-80 pr-2">
               {selectedFiles.map((file, index) => {
                 const fileKey = `${file.name}-${file.size}`;
                 const progress = uploadProgress[fileKey] || 0;
                 
-                return (                  <div key={index} className="file-item">
+                return (
+                  <div key={index} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-300 hover:border-blue-300">
                     <div className="flex items-center justify-between">                      <div className="flex items-center space-x-4 flex-1 min-w-0">
                         <div className="flex-shrink-0">
-                          <div className="file-icon">
-                            <FileText className="w-5 h-5 text-white" />
+                          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                            <FileText className="w-6 h-6 text-white" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900 truncate text-base">
+                          <p className="font-bold text-gray-900 truncate text-lg mb-1">
                             {file.name}
                           </p>
-                          <div className="flex items-center space-x-3 text-sm text-gray-500 mt-1">
-                            <span className="font-medium">{formatFileSize(file.size)}</span>
-                            <span>•</span>
-                            <span>{file.type || '未知格式'}</span>
+                          <div className="flex items-center space-x-3 text-sm text-gray-500">
+                            <span className="bg-gray-100 px-2 py-1 rounded-full font-medium">
+                              {formatFileSize(file.size)}
+                            </span>
+                            <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full font-medium">
+                              {file.type || '未知格式'}
+                            </span>
                             {isUploading && progress > 0 && (
-                              <>
-                                <span>•</span>
-                                <span className="text-blue-600 font-semibold">{progress}%</span>
-                              </>
+                              <span className="bg-green-50 text-green-600 px-2 py-1 rounded-full font-medium">                                {progress}%
+                              </span>
                             )}
                           </div>
                           {isUploading && progress > 0 && (
-                            <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
                               <div 
-                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" 
+                                className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500 shadow-sm" 
                                 style={{ width: `${progress}%` }}
                               ></div>
                             </div>
                           )}
                         </div>
-                      </div>                      <button
+                      </div>
+
+                      <button
                         onClick={() => handleRemoveFile(index)}
                         disabled={isUploading}
-                        className="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-red-50 rounded-md disabled:opacity-50"
+                        className="text-gray-400 hover:text-red-500 transition-all duration-200 p-2 hover:bg-red-50 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                         title="移除檔案"
                       >
                         <X className="w-4 h-4" />
@@ -237,25 +267,57 @@ const FileUploader: React.FC<FileUploaderProps> = ({ roomId }) => {
                   </div>
                 );
               })}
-            </div>            {/* 上傳控制按鈕 */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handleUpload}
-                disabled={isUploading || selectedFiles.length === 0}
-                className="btn-primary flex-1 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isUploading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                    <span>上傳中...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-5 h-5 mr-3" />
-                    <span>上傳全部檔案 ({selectedFiles.length})</span>
-                  </>
-                )}
-              </button>
+            </div>            {/* 上傳控制按鈕區域 */}
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleUpload}
+                  disabled={isUploading || selectedFiles.length === 0}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                >
+                  {isUploading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      <span className="text-lg">上傳中...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6 mr-3" />
+                      <span className="text-lg">上傳全部檔案 ({selectedFiles.length})</span>
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setSelectedFiles([]);
+                    setUploadProgress({});
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                  disabled={isUploading}
+                  className="sm:w-auto w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                >
+                  <X className="w-5 h-5 mr-2" />
+                  <span className="text-lg">清空列表</span>
+                </button>
+              </div>
+              
+              {/* 檔案統計資訊 */}
+              <div className="mt-4 flex flex-wrap items-center justify-between text-sm text-gray-600">
+                <div className="flex items-center space-x-4">
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
+                    檔案數量: {selectedFiles.length}
+                  </span>
+                  <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium">
+                    總大小: {formatFileSize(selectedFiles.reduce((total, file) => total + file.size, 0))}
+                  </span>
+                </div>
+                <span className="text-gray-500 text-xs mt-2 sm:mt-0">
+                  點擊「添加更多」繼續選擇檔案
+                </span>
+              </div>
             </div>
           </div>
         )}

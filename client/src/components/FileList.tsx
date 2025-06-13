@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Download, FileText, Clock, Eye, MessageSquare, Link as LinkIcon, Clipboard, Mic, ExternalLink, Copy, Play, Pause } from 'lucide-react';
+import { Download, FileText, Clock, MessageSquare, Link as LinkIcon, Clipboard, Mic, ExternalLink, Copy, Play, Pause } from 'lucide-react';
 import { FileInfo, ShareMessage } from '../types';
 import { formatFileSize, getFileIcon } from '../utils/helpers';
-import FilePreview from './FilePreview';
 import { toast } from 'react-hot-toast';
 
 interface FileListProps {
@@ -12,7 +11,6 @@ interface FileListProps {
 }
 
 const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
-  const [previewFile, setPreviewFile] = useState<FileInfo | null>(null);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioProgress, setAudioProgress] = useState<{[key: string]: {currentTime: number, duration: number}}>({});
 
@@ -68,7 +66,6 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
       minute: '2-digit'
     });
   };
-
   const handleDownload = (file: FileInfo) => {
     const downloadUrl = `/api/rooms/${roomId}/files/${file.filename}`;
     const link = document.createElement('a');
@@ -77,65 +74,6 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };  const handlePreview = (file: FileInfo) => {
-    if (!canPreview(file)) {
-      toast.error('此檔案類型不支援預覽');
-      return;
-    }
-    // 優先用相對路徑
-    const fileWithPreview = {
-      ...file,
-      previewUrl: `/api/rooms/${roomId}/files/${file.filename}`
-    };
-    setPreviewFile(fileWithPreview);
-  };  const canPreview = (file: FileInfo) => {
-    const previewableTypes = [
-      // 圖片類型
-      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp',
-      // 影片類型
-      'video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov', 'video/wmv',
-      // 音頻類型
-      'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a', 'audio/aac', 'audio/flac',
-      // 文檔類型
-      'application/pdf',
-      // 文字類型
-      'text/plain', 'text/html', 'text/css', 'text/javascript', 'text/typescript',
-      'application/json', 'application/xml', 'application/javascript',
-      // 程式碼類型
-      'text/x-python', 'text/x-java', 'text/x-c', 'text/x-cpp',
-      // Office 文檔（部分支援）
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-    ];
-    
-    // 檢查是否為可預覽的類型
-    const isPreviewable = previewableTypes.some(type => 
-      file.mimetype === type || file.mimetype.startsWith(type.split('/')[0] + '/')
-    );
-    
-    // 額外檢查文件擴展名
-    const extension = file.originalName.toLowerCase().split('.').pop();
-    const previewableExtensions = [
-      'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp',
-      'mp4', 'webm', 'ogg', 'avi', 'mov',
-      'mp3', 'wav', 'ogg', 'm4a', 'aac',
-      'pdf', 'txt', 'html', 'css', 'js', 'ts', 'json', 'xml',
-      'py', 'java', 'c', 'cpp', 'md', 'yaml', 'yml'
-    ];
-    
-    const extensionMatch = extension && previewableExtensions.includes(extension);
-    
-    console.log(`🔍 檢查檔案是否可預覽:`, {
-      filename: file.originalName,
-      mimetype: file.mimetype,
-      extension,
-      typeMatch: isPreviewable,
-      extensionMatch,
-      canPreview: isPreviewable || extensionMatch
-    });
-    
-    return isPreviewable || extensionMatch;
   };
 
   const formatDate = (date: Date | string) => {
@@ -181,100 +119,89 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
             <div className="space-y-3">
               {allItems.map((item, index) => (
                 <div key={index}>
-                {item.type === 'file' ? (
-                  // 檔案項目
-                  <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                {item.type === 'file' ? (                  // 檔案項目
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all duration-300 hover:border-blue-300 group">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        <div className="text-2xl flex-shrink-0">
+                      <div className="flex items-center space-x-4 flex-1 min-w-0">
+                        <div className="text-3xl flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
                           {getFileIcon(item.data.mimetype)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">
+                          <p className="font-semibold text-gray-900 truncate text-lg mb-1">
                             {item.data.originalName}
                           </p>
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            <span>{formatFileSize(item.data.size)}</span>
-                            <div className="flex items-center">
-                              <Clock className="w-3 h-3 mr-1" />
-                              <span>{formatDate(item.data.uploadedAt)}</span>
+                            <span className="bg-gray-100 px-2 py-1 rounded-full font-medium">
+                              {formatFileSize(item.data.size)}
+                            </span>
+                            <div className="flex items-center bg-blue-50 px-2 py-1 rounded-full">
+                              <Clock className="w-3 h-3 mr-1 text-blue-500" />
+                              <span className="text-blue-600">{formatDate(item.data.uploadedAt)}</span>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
-                        {canPreview(item.data) && (
-                          <button
-                            onClick={() => handlePreview(item.data)}
-                            className="btn-secondary flex items-center space-x-2"
-                          >
-                            <Eye className="w-4 h-4" />
-                            <span>預覽</span>
-                          </button>
-                        )}
+                      <div className="flex items-center space-x-3 ml-4 flex-shrink-0">
                         <button
                           onClick={() => handleDownload(item.data)}
-                          className="btn-primary flex items-center space-x-2"
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
                         >
-                          <Download className="w-4 h-4" />
-                          <span>下載</span>
+                          <Download className="w-5 h-5" />
+                          <span>下載檔案</span>
                         </button>
                       </div>
                     </div>
-                  </div>
-                ) : (
+                  </div>                ) : (
                   // 分享內容項目
-                  <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors bg-gradient-to-r from-blue-50/30 to-purple-50/30">
-                    <div className="flex items-start space-x-3">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-5 hover:shadow-md transition-all duration-300 hover:from-blue-100 hover:to-purple-100">
+                    <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                          {React.createElement(getMessageIcon(item.data.type), { className: "w-5 h-5 text-white" })}
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                          {React.createElement(getMessageIcon(item.data.type), { className: "w-6 h-6 text-white" })}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-medium text-gray-900">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-base font-semibold text-gray-900">
                             {getMessageTitle(item.data.type)}
                           </h4>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-sm text-gray-500 bg-white/70 px-3 py-1 rounded-full">
                             {formatTime(item.data.timestamp)}
                           </span>
-                        </div>
-                        
+                        </div>                        
                         {/* 內容渲染 */}
                         {item.data.type === 'text' && (
-                          <div className="space-y-2">
-                            <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed line-clamp-3">
+                          <div className="bg-white/70 rounded-lg p-4 border border-blue-100">
+                            <p className="text-gray-800 whitespace-pre-wrap leading-relaxed line-clamp-3 mb-3">
                               {item.data.content}
                             </p>
                             <button
                               onClick={() => copyToClipboard(item.data.content)}
-                              className="text-blue-500 hover:text-blue-600 text-xs font-medium flex items-center transition-colors"
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors"
                             >
-                              <Copy className="w-3 h-3 mr-1" />
-                              複製
+                              <Copy className="w-4 h-4 mr-2" />
+                              複製文字
                             </button>
                           </div>
                         )}
                         
                         {item.data.type === 'url' && (
-                          <div className="space-y-2">
-                            <p className="text-sm text-gray-800 break-all line-clamp-2">
+                          <div className="bg-white/70 rounded-lg p-4 border border-green-100">
+                            <p className="text-gray-800 break-all line-clamp-2 mb-3 bg-green-50 rounded-lg p-3 border border-green-200">
                               {item.data.content}
                             </p>
                             <div className="flex space-x-3">
                               <button
                                 onClick={() => openUrl(item.data.content)}
-                                className="text-blue-500 hover:text-blue-600 text-xs font-medium flex items-center transition-colors"
+                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors"
                               >
-                                <ExternalLink className="w-3 h-3 mr-1" />
-                                開啟
-                              </button>
-                              <button
+                                <ExternalLink className="w-4 h-4 mr-2" />
+                                開啟連結
+                              </button>                              <button
                                 onClick={() => copyToClipboard(item.data.content)}
-                                className="text-blue-500 hover:text-blue-600 text-xs font-medium flex items-center transition-colors"
+                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors"
                               >
-                                <Copy className="w-3 h-3 mr-1" />
+                                <Copy className="w-4 h-4 mr-2" />
                                 複製
                               </button>
                             </div>
@@ -282,23 +209,24 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                         )}
                         
                         {item.data.type === 'clipboard' && (
-                          <div className="space-y-2">
-                            <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed line-clamp-3">
-                              {item.data.content}
-                            </p>
+                          <div className="bg-white/70 rounded-lg p-4 border border-purple-100">
+                            <div className="bg-purple-50 rounded-lg p-3 border border-purple-200 mb-3 max-h-32 overflow-y-auto">
+                              <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+                                {item.data.content}
+                              </p>
+                            </div>
                             <button
                               onClick={() => copyToClipboard(item.data.content)}
-                              className="text-blue-500 hover:text-blue-600 text-xs font-medium flex items-center transition-colors"
+                              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors"
                             >
-                              <Copy className="w-3 h-3 mr-1" />
-                              複製
+                              <Copy className="w-4 h-4 mr-2" />
+                              複製到剪貼簿
                             </button>
                           </div>
                         )}
-                        
-                        {item.data.type === 'voice' && (
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-3">
+                          {item.data.type === 'voice' && (
+                          <div className="bg-white/70 rounded-lg p-4 border border-red-100">
+                            <div className="flex items-center space-x-4 mb-4">
                               <audio
                                 id={`audio-${item.data.id}`}
                                 src={item.data.content}
@@ -322,20 +250,24 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                                     audio.play();
                                   }
                                 }}
-                                className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center text-white transition-colors flex-shrink-0"
+                                className={`w-12 h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 shadow-lg ${
+                                  playingAudio === item.data.id 
+                                    ? 'bg-red-600 animate-pulse' 
+                                    : 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600'
+                                }`}
                               >
                                 {playingAudio === item.data.id ? (
-                                  <Pause className="w-4 h-4" />
+                                  <Pause className="w-6 h-6" />
                                 ) : (
-                                  <Play className="w-4 h-4 ml-0.5" />
+                                  <Play className="w-6 h-6 ml-1" />
                                 )}
                               </button>
                               
                               {/* 進度條和時間 */}
-                              <div className="flex-1 space-y-1">
-                                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div className="flex-1 space-y-2">
+                                <div className="w-full bg-red-200 rounded-full h-3">
                                   <div 
-                                    className="bg-blue-500 h-1.5 rounded-full transition-all"
+                                    className="bg-gradient-to-r from-red-500 to-pink-500 h-3 rounded-full transition-all duration-300"
                                     style={{ 
                                       width: audioProgress[item.data.id] 
                                         ? `${(audioProgress[item.data.id].currentTime / audioProgress[item.data.id].duration) * 100}%` 
@@ -343,22 +275,24 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                                     }}
                                   />
                                 </div>
-                                <div className="text-xs text-gray-600 font-mono">
+                                <div className="text-sm text-red-600 font-mono">
                                   {audioProgress[item.data.id] ? (
                                     <>
                                       {formatAudioTime(audioProgress[item.data.id].currentTime)} / {formatAudioTime(audioProgress[item.data.id].duration)}
                                     </>
-                                  ) : (
-                                    '0:00 / 0:00'
+                                  ) : (                                    '0:00 / 0:00'
                                   )}
                                 </div>
+                                <p className="text-sm text-red-600 mt-1">
+                                  {playingAudio === item.data.id ? '正在播放語音訊息...' : '點擊播放語音訊息'}
+                                </p>
                               </div>
                             </div>
                             <button
                               onClick={() => copyToClipboard(item.data.content)}
-                              className="text-blue-500 hover:text-blue-600 text-xs font-medium flex items-center transition-colors"
+                              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors"
                             >
-                              <Copy className="w-3 h-3 mr-1" />
+                              <Copy className="w-4 h-4 mr-2" />
                               複製連結
                             </button>
                           </div>
@@ -369,18 +303,8 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          </div>        )}
       </div>
-      
-      {/* 檔案預覽模態框 */}
-      {previewFile && (
-        <FilePreview
-          file={previewFile}
-          onClose={() => setPreviewFile(null)}
-          onDownload={() => handleDownload(previewFile)}
-        />
-      )}
     </div>
   );
 };

@@ -2,22 +2,47 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="FastTransfer - 快速安全的檔案傳輸平台，支援即時檔案分享，無需註冊，簡單易用。" />
-    <meta name="keywords" content="檔案傳輸,檔案分享,線上傳檔,即時分享,無需註冊" />
-    <meta name="author" content="FastTransfer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    
+    <!-- 基本 SEO -->
+    <title>FastTransfer - 快速檔案傳輸平台</title>
+    <meta name="description" content="快速、安全、簡單的檔案傳輸平台。無需註冊，即可開始分享檔案。支援所有檔案格式，即時傳輸，房間管理系統。" />
+    <meta name="keywords" content="檔案傳輸,文件分享,快速上傳,房間管理,即時分享,無需註冊,檔案分享,線上傳檔" />
+    <meta name="author" content="FastTransfer Team" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="FastTransfer - 快速檔案傳輸" />
-    <meta property="og:description" content="安全快速的檔案傳輸平台，支援即時檔案分享" />
+    <meta property="og:title" content="FastTransfer - 快速檔案傳輸平台" />
+    <meta property="og:description" content="快速、安全、簡單的檔案傳輸平台。無需註冊，即可開始分享檔案。" />
+    <meta property="og:url" content="https://fasttransfer.netlify.app" />
+    <meta property="og:locale" content="zh_TW" />
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:title" content="FastTransfer - 快速檔案傳輸" />
-    <meta property="twitter:description" content="安全快速的檔案傳輸平台，支援即時檔案分享" />
-      <title>FastTransfer - 快速檔案傳輸</title>  </head>
+    <meta property="twitter:title" content="FastTransfer - 快速檔案傳輸平台" />
+    <meta property="twitter:description" content="快速、安全、簡單的檔案傳輸平台。無需註冊，即可開始分享檔案。" />
+    
+    <!-- PWA 支援 -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="FastTransfer" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    
+    <!-- 安全性 -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
+    <!-- 效能提示 -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
