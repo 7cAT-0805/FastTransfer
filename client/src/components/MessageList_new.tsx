@@ -167,140 +167,118 @@ const MessageList: React.FC<MessageListProps> = ({ messages, className = '' }) =
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 truncate text-lg mb-1">
                       {getMessageTitle(message.type)}
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    </p>                    <div className="flex items-center space-x-4 text-sm text-gray-500">
                       <span className="bg-gray-100 px-2 py-1 rounded-full font-medium">
-                        {message.type === 'text' && '文字訊息'}
+                        {message.type === 'text' && formatFileSize(new Blob([message.content]).size)}
                         {message.type === 'url' && '網址連結'}
-                        {message.type === 'clipboard' && '剪貼簿'}
-                        {message.type === 'voice' && '語音訊息'}
-                        {message.type === 'image' && '圖片檔案'}
+                        {message.type === 'clipboard' && formatFileSize(new Blob([message.content]).size)}
+                        {message.type === 'voice' && message.metadata?.size ? formatFileSize(message.metadata.size) : '語音檔案'}
+                        {message.type === 'image' && message.metadata?.size ? formatFileSize(message.metadata.size) : '圖片檔案'}
                       </span>
                       <div className="flex items-center bg-blue-50 px-2 py-1 rounded-full">
                         <Clock className="w-3 h-3 mr-1 text-blue-500" />
                         <span className="text-blue-600">{formatTime(message.timestamp)}</span>
-                      </div>                    </div>
+                      </div>
+                    </div>
+                    
+                    {/* 內容預覽 - 與檔案項目風格一致 */}
+                    <div className="mt-2 text-sm text-gray-600">
+                      {message.type === 'text' && (
+                        <p className="truncate">內容: {message.content}</p>
+                      )}
+                      {message.type === 'url' && (
+                        <p className="truncate">網址: {message.content}</p>
+                      )}
+                      {message.type === 'clipboard' && (
+                        <p className="truncate">剪貼簿: {message.content}</p>
+                      )}
+                      {message.type === 'voice' && (
+                        <p className={playingAudio === message.id ? 'text-red-600' : ''}>
+                          {playingAudio === message.id ? '正在播放語音訊息...' : '語音訊息'}
+                        </p>
+                      )}
+                      {message.type === 'image' && (
+                        <p>圖片: {message.metadata?.fileName || '未命名.jpg'}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              
-              {/* 分享內容區域 */}
-              <div className="mt-4">
-                {/* 內容渲染 */}
+                
+                {/* 操作按鈕區域 - 與檔案項目風格一致 */}
+                <div className="flex items-center space-x-3 ml-4 flex-shrink-0">
                   {message.type === 'text' && (
-                    <div className="bg-white/70 rounded-lg p-4 border border-blue-100">
-                      <p className="text-gray-800 whitespace-pre-wrap leading-relaxed line-clamp-3 mb-3">
-                        {message.content}
-                      </p>
+                    <button
+                      onClick={() => copyToClipboard(message.content)}
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <Copy className="w-5 h-5" />
+                      <span>複製文字</span>
+                    </button>
+                  )}
+                  
+                  {message.type === 'url' && (
+                    <>
+                      <button
+                        onClick={() => openUrl(message.content)}
+                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        <span>開啟連結</span>
+                      </button>
                       <button
                         onClick={() => copyToClipboard(message.content)}
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
                       >
                         <Copy className="w-5 h-5" />
-                        <span>複製文字</span>
+                        <span>複製</span>
                       </button>
-                    </div>
+                    </>
                   )}
-                    {message.type === 'url' && (
-                    <div className="bg-white/70 rounded-lg p-4 border border-green-100">
-                      <p className="text-gray-800 break-all line-clamp-2 mb-3 bg-green-50 rounded-lg p-3 border border-green-200">
-                        {message.content}
-                      </p>
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={() => openUrl(message.content)}
-                          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                        >
-                          <ExternalLink className="w-5 h-5" />
-                          <span>開啟連結</span>
-                        </button>
-                        <button
-                          onClick={() => copyToClipboard(message.content)}
-                          className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                        >
-                          <Copy className="w-5 h-5" />
-                          <span>複製</span>
-                        </button>
-                      </div>
-                    </div>
+                  
+                  {message.type === 'clipboard' && (
+                    <button
+                      onClick={() => copyToClipboard(message.content)}
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <Copy className="w-5 h-5" />
+                      <span>複製到剪貼簿</span>
+                    </button>
                   )}
-                    {message.type === 'clipboard' && (
-                    <div className="bg-white/70 rounded-lg p-4 border border-purple-100">
-                      <div className="bg-purple-50 rounded-lg p-3 border border-purple-200 mb-3 max-h-32 overflow-y-auto">
-                        <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
-                          {message.content}
-                        </p>
-                      </div>
+                  
+                  {message.type === 'voice' && (
+                    <>
                       <button
-                        onClick={() => copyToClipboard(message.content)}
-                        className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        onClick={() => toggleAudio(message.id, message.content)}
+                        className={`px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                          playingAudio === message.id 
+                            ? 'bg-red-600 text-white animate-pulse' 
+                            : 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white'
+                        }`}
                       >
-                        <Copy className="w-5 h-5" />
-                        <span>複製到剪貼簿</span>
+                        {playingAudio === message.id ? (
+                          <><Pause className="w-5 h-5" /><span>暫停</span></>
+                        ) : (
+                          <><Play className="w-5 h-5" /><span>播放</span></>
+                        )}
                       </button>
-                    </div>
+                      <button
+                        onClick={() => downloadFile(message.content, '語音訊息.wav')}
+                        className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                      >
+                        <Download className="w-5 h-5" />
+                        <span>下載</span>
+                      </button>
+                    </>
                   )}
-                    {message.type === 'voice' && (
-                    <div className="bg-white/70 rounded-lg p-4 border border-red-100">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <button
-                          onClick={() => toggleAudio(message.id, message.content)}
-                          className={`w-16 h-16 rounded-full flex items-center justify-center text-white transition-all duration-300 shadow-lg ${
-                            playingAudio === message.id 
-                              ? 'bg-red-600 animate-pulse' 
-                              : 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 hover:scale-110'
-                          }`}
-                        >
-                          {playingAudio === message.id ? (
-                            <Pause className="w-8 h-8" />
-                          ) : (
-                            <Play className="w-8 h-8 ml-1" />
-                          )}
-                        </button>
-                        <div className="flex-1">
-                          <div className="w-full bg-red-200 rounded-full h-4">
-                            <div className="bg-gradient-to-r from-red-500 to-pink-500 h-4 rounded-full w-0 transition-all"></div>
-                          </div>
-                          <p className="text-sm text-red-600 mt-2 font-medium">
-                            {playingAudio === message.id ? '正在播放語音訊息...' : '點擊播放語音訊息'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-red-700 bg-red-50 px-3 py-1 rounded-full font-medium">
-                          語音訊息
-                          {message.metadata?.size && ` (${formatFileSize(message.metadata.size)})`}
-                        </span>
-                        <button
-                          onClick={() => downloadFile(message.content, '語音訊息.wav')}
-                          className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                        >
-                          <Download className="w-5 h-5" />
-                          <span>下載</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                    {message.type === 'image' && (
-                    <div className="bg-white/70 rounded-lg p-4 border border-yellow-100">
-                      <img
-                        src={message.content}
-                        alt="分享的照片"
-                        className="max-w-full h-auto rounded-xl mb-4 max-h-64 object-cover border border-yellow-200 shadow-lg"
-                      />
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-yellow-700 bg-yellow-50 px-3 py-1 rounded-full font-medium">
-                          {message.metadata?.fileName && `檔名: ${message.metadata.fileName}`}
-                          {message.metadata?.size && ` (${formatFileSize(message.metadata.size)})`}
-                        </span>
-                        <button
-                          onClick={() => downloadFile(message.content, message.metadata?.fileName || '照片.jpg')}
-                          className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                        >
-                          <Download className="w-5 h-5" />
-                          <span>下載照片</span>                        </button>
-                      </div>
-                    </div>
-                  )}
+                  
+                  {message.type === 'image' && (
+                    <button
+                      onClick={() => downloadFile(message.content, message.metadata?.fileName || '照片.jpg')}
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                    >
+                      <Download className="w-5 h-5" />
+                      <span>下載照片</span>
+                    </button>                  )}
                 </div>
               </div>
             </div>
