@@ -30,6 +30,7 @@ export class DeveloperMode {
   private debugPanel: HTMLElement | null = null;
   private isHost = true; // 新增：角色切換
   private mockMessages: MockMessage[] = []; // 新增：模擬消息
+  private debugLogs = true; // 新增：調試日誌開關
 
   private constructor() {
     this.initConsoleActivation();
@@ -176,105 +177,126 @@ export class DeveloperMode {
       (file as any).filename = file.id;
       (file as any).previewUrl = `/api/rooms/DEV12345/files/${file.id}`;
     });
-  }private createDebugPanel() {
+  }  private createDebugPanel() {
     this.debugPanel = document.createElement('div');
-    this.debugPanel.className = 'fixed bottom-4 right-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900 text-white rounded-2xl shadow-2xl z-50 min-w-80 border border-indigo-500/30 backdrop-blur-sm';
-    this.debugPanel.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #3730a3 50%, #1e40af 75%, #1e3a8a 100%)';
+    // 使用與現有應用一致的顏色方案
+    this.debugPanel.className = 'fixed bottom-4 right-4 bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-900 rounded-2xl shadow-2xl z-50 min-w-80 max-w-sm border border-blue-200 backdrop-blur-sm';
+    this.debugPanel.style.background = 'linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(224, 231, 255, 0.95) 100%)';
     this.debugPanel.innerHTML = `
-      <div class="p-6">
-        <!-- 標題區域 -->
-        <div class="flex items-center justify-between mb-4">
+      <div class="p-4">
+        <!-- 標題區域 - 與Layout風格一致 -->
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-blue-200">
           <div class="flex items-center space-x-2">
-            <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-            <span class="font-bold text-lg bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">🛠️ 開發者面板</span>
+            <div class="w-3 h-3 bg-primary-600 rounded-full animate-pulse shadow-lg"></div>
+            <span class="font-bold text-lg text-gray-900">🛠️ 開發者面板</span>
           </div>
           <button onclick="this.parentElement.parentElement.style.display='none'" 
-                  class="text-gray-400 hover:text-white hover:bg-white/10 rounded-full w-8 h-8 flex items-center justify-center transition-all backdrop-blur-sm">
+                  class="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
             ✕
           </button>
-        </div>        <!-- 角色切換區域 -->
-        <div class="mb-4 p-4 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl border border-blue-500/30 backdrop-blur-sm">
-          <div class="text-sm text-blue-200 mb-3 font-medium">👤 當前視角</div>
-          <div class="flex space-x-2">
-            <button onclick="window.devMode.setRole(true)" 
-                    class="flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg ${this.isHost ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/30' : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'}">
-              👑 房主模式
-            </button>
-            <button onclick="window.devMode.setRole(false)" 
-                    class="flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg ${!this.isHost ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30' : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'}">
-              👥 訪客模式
-            </button>
+        </div>
+
+        <!-- 當前模式指示 -->
+        <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+          <div class="flex items-center justify-center space-x-2">
+            <div class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+            <span class="text-amber-800 text-sm font-semibold">模擬開發模式</span>
           </div>
-          <div class="mt-2 text-xs text-center text-blue-300/80">
-            ${this.isHost ? '📤 可上傳檔案、管理房間' : '📥 只能下載檔案、查看內容'}
+          <div class="text-center text-xs text-amber-700 mt-1">
+            所有 API 和 Socket 連接已模擬
           </div>
         </div>
 
         <!-- 後端連接模式切換 -->
-        <div class="mb-4 p-4 bg-gradient-to-r from-green-900/50 to-blue-900/50 rounded-xl border border-green-500/30 backdrop-blur-sm">
-          <div class="text-sm text-green-200 mb-3 font-medium">🔌 後端連接模式</div>
+        <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl">
+          <div class="text-sm text-green-800 mb-3 font-semibold">🔌 後端連接模式</div>
           <div class="flex space-x-2 mb-2">
             <button onclick="window.ConnectLocal()" 
-                    class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 shadow-lg ${localStorage.getItem('fastransfer_use_local') === 'true' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-blue-500/30' : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'}">
+                    class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 ${localStorage.getItem('fastransfer_use_local') === 'true' ? 'bg-primary-600 text-white shadow-lg' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}">
               🔌 本地後端
             </button>
             <button onclick="window.ConnectCloud()" 
-                    class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 shadow-lg ${localStorage.getItem('fastransfer_use_local') !== 'true' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-500/30' : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'}">
+                    class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 ${localStorage.getItem('fastransfer_use_local') !== 'true' ? 'bg-primary-600 text-white shadow-lg' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}">
               ☁️ 雲端後端
             </button>
           </div>
-          <div class="text-xs text-center text-green-300/80">
+          <div class="text-xs text-center text-green-700">
             ${localStorage.getItem('fastransfer_use_local') === 'true' ? '🔌 localhost:3001' : '☁️ Railway 雲端服務'}
           </div>
         </div>
 
+        <!-- 角色切換區域 -->
+        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+          <div class="text-sm text-blue-800 mb-3 font-semibold">👤 當前視角</div>
+          <div class="flex space-x-2">
+            <button onclick="window.devMode.setRole(true)" 
+                    class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 ${this.isHost ? 'bg-amber-500 text-white shadow-lg' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}">
+              👑 房主
+            </button>
+            <button onclick="window.devMode.setRole(false)" 
+                    class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 ${!this.isHost ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}">
+              👥 訪客
+            </button>
+          </div>
+          <div class="mt-2 text-xs text-center text-blue-700">
+            ${this.isHost ? '📤 可上傳檔案、管理房間' : '📥 只能下載檔案、查看內容'}
+          </div>
+        </div>
+
         <!-- 狀態資訊 -->
-        <div class="space-y-3 mb-4 p-4 bg-gradient-to-r from-indigo-900/50 to-blue-900/50 rounded-xl border border-indigo-500/30">
-          <div class="flex justify-between items-center">
-            <span class="text-gray-300 text-sm">🔧 API 狀態</span>
-            <span class="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full text-xs font-medium shadow-lg">模擬模式</span>
-          </div>
-          
-          <div class="flex justify-between items-center">
-            <span class="text-gray-300 text-sm">🏠 房間代碼</span>
-            <span class="text-blue-300 font-mono text-sm bg-blue-900/30 px-2 py-1 rounded">${this.mockData?.id || 'DEV12345'}</span>
-          </div>
-          
-          <div class="flex justify-between items-center">
-            <span class="text-gray-300 text-sm">👥 在線用戶</span>
-            <span class="text-emerald-300 font-semibold bg-emerald-900/30 px-2 py-1 rounded">${this.mockData?.participants || 3}</span>
-          </div>
-          
-          <div class="flex justify-between items-center">
-            <span class="text-gray-300 text-sm">📁 檔案數量</span>
-            <span class="text-purple-300 font-semibold bg-purple-900/30 px-2 py-1 rounded">${this.mockData?.files.length || 2}</span>
-          </div>
-          
-          <div class="flex justify-between items-center">
-            <span class="text-gray-300 text-sm">💬 分享訊息</span>
-            <span class="text-pink-300 font-semibold bg-pink-900/30 px-2 py-1 rounded">${this.mockMessages.length}</span>
+        <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-xl">
+          <div class="text-sm text-indigo-800 mb-3 font-semibold">📊 狀態資訊</div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">🏠 房間代碼</span>
+              <span class="text-indigo-700 font-mono bg-indigo-100 px-2 py-1 rounded">${this.mockData?.id || 'DEV12345'}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">👥 在線用戶</span>
+              <span class="text-emerald-700 font-semibold bg-emerald-100 px-2 py-1 rounded">${this.mockData?.participants || 3}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">📁 檔案數量</span>
+              <span class="text-purple-700 font-semibold bg-purple-100 px-2 py-1 rounded">${this.mockData?.files.length || 2}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">💬 分享訊息</span>
+              <span class="text-pink-700 font-semibold bg-pink-100 px-2 py-1 rounded">${this.mockMessages.length}</span>
+            </div>
           </div>
         </div>
 
         <!-- 快速操作 -->
         <div class="space-y-2 mb-4">
           <button onclick="window.devMode.addMockFile()" 
-                  class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg shadow-blue-500/25">
+                  class="w-full px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-sm">
             📁 添加測試檔案
           </button>
           <button onclick="window.devMode.addMockMessage()" 
-                  class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg shadow-green-500/25">
+                  class="w-full px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-sm">
             💬 添加測試訊息
           </button>
           <button onclick="window.devMode.clearMockData()" 
-                  class="w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg shadow-orange-500/25">
+                  class="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-sm">
             🗑️ 清空測試數據
+          </button>
+        </div>
+
+        <!-- 開發工具 -->
+        <div class="space-y-2 mb-4">
+          <button onclick="window.devMode.exportMockData()" 
+                  class="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-sm">
+            📤 匯出測試數據
+          </button>
+          <button onclick="window.devMode.toggleDebugLogs()" 
+                  class="w-full px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-sm">
+            🐛 ${this.shouldShowDebugLogs() ? '關閉' : '開啟'}除錯日誌
           </button>
         </div>
 
         <!-- 退出按鈕 -->
         <button onclick="window.devMode.exitDeveloperMode()" 
-                class="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg shadow-red-500/25">
+                class="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-sm">
           🚪 退出開發者模式
         </button>
       </div>
@@ -480,16 +502,74 @@ export class DeveloperMode {
     
     console.log('🛠️ 已添加測試訊息:', newMessage.content.substring(0, 20) + '...');
   }
-
   updateDebugPanel() {
     if (this.debugPanel) {
       this.debugPanel.remove();
       this.createDebugPanel();
     }
   }
+
+  // 新增：匯出測試數據
+  exportMockData() {
+    const data = {
+      room: this.mockData,
+      messages: this.mockMessages,
+      settings: {
+        isHost: this.isHost,
+        debugLogs: this.debugLogs,
+        useLocal: localStorage.getItem('fastransfer_use_local') === 'true'
+      },
+      exportedAt: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fastransfer-devmode-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    console.log('📤 開發者模式數據已匯出');
+    
+    // 顯示成功通知
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-xl z-50';
+    notification.innerHTML = '📤 測試數據已匯出';
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.remove(), 2000);
+  }
+
+  // 新增：切換除錯日誌
+  toggleDebugLogs() {
+    this.debugLogs = !this.debugLogs;
+    localStorage.setItem('fastransfer_debug_logs', this.debugLogs.toString());
+    this.updateDebugPanel();
+    
+    console.log(`🐛 除錯日誌已${this.debugLogs ? '開啟' : '關閉'}`);
+    
+    // 顯示狀態通知
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 left-1/2 transform -translate-x-1/2 ${this.debugLogs ? 'bg-blue-500' : 'bg-gray-500'} text-white px-6 py-3 rounded-lg shadow-xl z-50`;
+    notification.innerHTML = `🐛 除錯日誌已${this.debugLogs ? '開啟' : '關閉'}`;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.remove(), 2000);
+  }
+
+  // 新增：檢查是否應該顯示除錯日誌
+  shouldShowDebugLogs(): boolean {
+    const saved = localStorage.getItem('fastransfer_debug_logs');
+    return saved ? saved === 'true' : this.debugLogs;
+  }
+
   exitDeveloperMode() {
     localStorage.removeItem('fastransfer_dev_mode');
     localStorage.removeItem('fastransfer_dev_role');
+    localStorage.removeItem('fastransfer_debug_logs');
     
     // 顯示退出確認
     const confirmed = confirm('確定要退出開發者模式嗎？頁面將會重新載入。');

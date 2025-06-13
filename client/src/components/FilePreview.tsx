@@ -9,8 +9,6 @@ import {
   Video,
   Music,
   File,
-  ZoomIn,
-  ZoomOut,
   RotateCw
 } from 'lucide-react';
 import { FileInfo } from '../types';
@@ -23,21 +21,12 @@ interface FilePreviewProps {
 }
 
 const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) => {
-  const [zoom, setZoom] = useState(100);
   const [rotation, setRotation] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isClosing, setIsClosing] = useState(false);  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         handleClose();
-      }
-      if ((e.key === '+' || e.key === '=') && !e.ctrlKey) {
-        e.preventDefault();
-        handleZoomIn();
-      }
-      if (e.key === '-' && !e.ctrlKey) {
-        e.preventDefault();
-        handleZoomOut();
       }
       if (e.key === 'r' || e.key === 'R') {
         e.preventDefault();
@@ -87,16 +76,14 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
     return File;
   };
 
-  const FileIcon = getFileIcon();  const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 300));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 25));
-  const handleRotate = () => setRotation(prev => (prev + 90) % 360);
+  const FileIcon = getFileIcon();  const handleRotate = () => setRotation(prev => (prev + 90) % 360);
 
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
       onClose();
     }, 200); // 延遲關閉，讓動畫播放完成
-  };  const previewContent = (
+  };const previewContent = (
     <div 
       className={`fullscreen-preview fixed inset-0 backdrop-blur-sm z-[99999] flex flex-col transition-all duration-300 ${
         isClosing 
@@ -141,27 +128,6 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
           {finalIsImage && (
             <div className="flex items-center space-x-2 border-r border-white/20 pr-3">
               <button
-                onClick={handleZoomOut}
-                disabled={zoom <= 25}
-                className="p-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group hover:scale-110"
-                title="縮小 (-)"
-              >
-                <ZoomOut className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
-              </button>
-              <div className="min-w-[3.5rem] text-center">
-                <span className="text-sm font-bold text-white bg-white/20 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/10">
-                  {zoom}%
-                </span>
-              </div>
-              <button
-                onClick={handleZoomIn}
-                disabled={zoom >= 300}
-                className="p-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group hover:scale-110"
-                title="放大 (+)"
-              >
-                <ZoomIn className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
-              </button>
-              <button
                 onClick={handleRotate}
                 className="p-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/20 transition-all duration-200 group hover:scale-110"
                 title="旋轉 (R)"
@@ -204,24 +170,20 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
               imageLoaded 
                 ? 'opacity-100 scale-100 translate-y-0' 
                 : 'opacity-0 scale-95 translate-y-4'
-            }`}>
-              <img
+            }`}>              <img
                 src={file.previewUrl}
                 alt={file.originalName}
                 className="max-w-full max-h-full object-contain select-none rounded-2xl shadow-2xl transition-all duration-500 ease-out"
                 style={{
-                  transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
+                  transform: `rotate(${rotation}deg)`,
                   transformOrigin: 'center center',
-                  cursor: zoom > 100 ? 'grab' : 'zoom-in',
-                  filter: `drop-shadow(0 25px 50px rgba(0, 0, 0, 0.5)) ${
-                    zoom > 100 ? 'brightness(1.05) contrast(1.02)' : ''
-                  }`,
+                  cursor: 'default',
+                  filter: 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.5))',
                   maxWidth: '90vw',
                   maxHeight: '80vh',
                   minHeight: 'auto',
                   minWidth: 'auto'
                 }}
-                onClick={() => zoom === 100 ? handleZoomIn() : handleZoomOut()}
                 draggable={false}onLoad={() => {
                   console.log('✅ 圖片載入成功:', file.originalName);
                   setImageLoaded(true);
@@ -249,36 +211,19 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
                   toast.error(`無法載入圖片: ${file.originalName}`, { duration: 3000 });
                 }}
               />
-              
-              {/* 圖片光暈效果 */}
+                {/* 圖片光暈效果 */}
               {imageLoaded && (
                 <div 
                   className="absolute inset-0 rounded-2xl pointer-events-none opacity-20"
                   style={{
                     background: `radial-gradient(circle at center, transparent 60%, rgba(59, 130, 246, 0.3) 100%)`,
-                    transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
+                    transform: `rotate(${rotation}deg)`,
                     transformOrigin: 'center center',
                     transition: 'all 0.5s ease-out'
                   }}
                 />
               )}
             </div>
-            
-            {/* 縮放提示 */}
-            {zoom === 100 && imageLoaded && (
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/70 backdrop-blur-sm rounded-full px-6 py-3 text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 border border-white/10">
-                <span className="mr-2">💡</span>
-                點擊圖片放大 • 按 ESC 關閉
-              </div>
-            )}
-
-            {/* 放大狀態提示 */}
-            {zoom > 100 && imageLoaded && (
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-blue-500/80 backdrop-blur-sm rounded-full px-6 py-3 text-white text-sm font-medium border border-blue-400/30">
-                <span className="mr-2">🔍</span>
-                縮放 {zoom}% • 點擊縮小 • R 旋轉
-              </div>
-            )}
           </div>
         )}
 
@@ -394,7 +339,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, onDownload }) 
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
         <div className="bg-black/70 backdrop-blur-md rounded-lg px-4 py-2 text-gray-300 text-sm">
           <span>按 ESC 關閉</span>
-          {finalIsImage && <span> • 點擊圖片縮放 • 使用 +/- 鍵縮放 • R 鍵旋轉</span>}        </div>
+          {finalIsImage && <span> • R 鍵旋轉</span>}        </div>
       </div>
     </div>
   );
