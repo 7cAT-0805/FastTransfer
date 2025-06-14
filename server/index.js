@@ -246,7 +246,11 @@ app.get('/api/rooms/:roomId/files/:filename', (req, res) => {
   }
     console.log(`✅ 檔案服務成功: ${fileData.originalName} (${fileData.buffer.length} bytes)`);
     // 設置響應標頭 - 支援中文檔名
-  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(fileData.originalName)}`);
+  if (fileData.mimetype && (fileData.mimetype.startsWith('image/') || fileData.mimetype === 'application/pdf')) {
+    res.setHeader('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(fileData.originalName)}`);
+  } else {
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(fileData.originalName)}`);
+  }
   res.setHeader('Content-Type', fileData.mimetype || 'application/octet-stream');
   res.setHeader('Content-Length', fileData.buffer.length);
   res.setHeader('Cache-Control', 'no-cache');
