@@ -122,6 +122,10 @@ export const apiWrapper = {
 // 臨時解決 CORS 問題的 wrapper
 const apiWithFallback = {
   ...api,
+  post: api.post.bind(api),
+  get: api.get.bind(api),
+  put: api.put.bind(api),
+  delete: api.delete.bind(api),
   async request(config: any) {
     try {
       return await api.request(config);
