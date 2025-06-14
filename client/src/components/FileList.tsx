@@ -94,12 +94,12 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
     if (audio) {
       setAudioProgress(prev => ({ ...prev, [id]: audio.currentTime }));
     }
-  };
-  const handleAudioLoaded = (id: string) => {
+  };  const handleAudioLoaded = (id: string) => {
     const audio = audioRefs.current[id];
-    if (audio) {
+    if (audio && isFinite(audio.duration)) {
       setAudioDuration(prev => ({ ...prev, [id]: audio.duration }));
-    }  };
+    }
+  };
 
   // 預覽文字/語音 - 僅支援這兩種類型
   const handlePreview = (item: any) => {
@@ -289,10 +289,8 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                 <div className="text-center">
                   <h2 className="text-3xl font-bold mb-2">文字內容</h2>
                   <p className="text-xl text-gray-300">分享的文字訊息</p>
-                </div>
-
-                {/* 文字內容卡片 */}
-                <div className="w-full bg-white bg-opacity-95 backdrop-blur-lg rounded-3xl border border-white border-opacity-30 shadow-2xl p-8 max-h-[60vh] overflow-hidden">
+                </div>                {/* 文字內容卡片 - 加強圓邊邊框 */}
+                <div className="w-full bg-white bg-opacity-95 backdrop-blur-xl rounded-3xl border-2 border-white border-opacity-60 shadow-2xl p-8 max-h-[60vh] overflow-hidden ring-1 ring-white ring-opacity-25">
                   <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-6 border border-blue-200 shadow-sm max-h-full overflow-hidden">
                     <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-100 max-h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                       <pre className="whitespace-pre-wrap break-words text-gray-800 leading-relaxed font-mono text-sm">
@@ -325,10 +323,8 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                 className="absolute top-8 right-8 p-3 hover:bg-white hover:bg-opacity-20 rounded-full transition-all duration-200 group z-10"
               >
                 <X className="w-8 h-8 text-white group-hover:text-gray-200" />
-              </button>
-
-              {/* 語音播放區域 - 加上圓邊邊框 */}
-              <div className="flex flex-col items-center justify-center space-y-8 max-w-2xl w-full bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl border border-white border-opacity-30 shadow-2xl p-12">
+              </button>              {/* 語音播放區域 - 加強圓邊邊框視覺效果 */}
+              <div className="flex flex-col items-center justify-center space-y-8 max-w-2xl w-full bg-white bg-opacity-15 backdrop-blur-xl rounded-3xl border-2 border-white border-opacity-50 shadow-2xl p-12 ring-1 ring-white ring-opacity-25">
                 {/* 語音圖示 */}
                 <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500 ${
                   playingId === previewModal.id 
@@ -359,24 +355,31 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                 />
 
                 {/* 播放進度條 */}
-                {(audioDuration[previewModal.id] || previewModal.content.metadata?.duration) && (
-                  <div className="w-full bg-white bg-opacity-20 rounded-full h-4 shadow-inner backdrop-blur-sm">
-                    <div 
-                      className="bg-gradient-to-r from-purple-300 to-pink-300 h-4 rounded-full transition-all duration-200 shadow-lg"
-                      style={{ 
-                        width: `${((audioProgress[previewModal.id] || 0) / (audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 1)) * 100}%` 
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* 時間顯示 - 修正 Infinity 問題 */}
+                <div className="w-full bg-white bg-opacity-20 rounded-full h-4 shadow-inner backdrop-blur-sm border border-white border-opacity-30">
+                  <div 
+                    className="bg-gradient-to-r from-purple-300 to-pink-300 h-4 rounded-full transition-all duration-200 shadow-lg"
+                    style={{ 
+                      width: `${(() => {
+                        const current = audioProgress[previewModal.id] || 0;
+                        const total = audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 1;
+                        return isFinite(total) && total > 0 ? (current / total) * 100 : 0;
+                      })()}%` 
+                    }}
+                  />
+                </div>{/* 時間顯示 - 改善邏輯 */}
                 <div className="text-center">
                   <span className="text-2xl font-mono font-bold text-gray-200">
                     {Math.floor(audioProgress[previewModal.id] || 0)}s / {
                       (() => {
-                        const duration = audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 0;
-                        return isFinite(duration) && duration > 0 ? Math.floor(duration) : '?';
+                        const duration = audioDuration[previewModal.id];
+                        if (duration && isFinite(duration) && duration > 0) {
+                          return Math.floor(duration);
+                        }
+                        const metaDuration = previewModal.content.metadata?.duration;
+                        if (metaDuration && isFinite(metaDuration) && metaDuration > 0) {
+                          return Math.floor(metaDuration);
+                        }
+                        return '--';
                       })()
                     }s
                   </span>
