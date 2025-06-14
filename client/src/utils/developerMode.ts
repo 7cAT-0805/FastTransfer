@@ -17,7 +17,7 @@ interface MockRoom {
 
 interface MockMessage {
   id: string;
-  type: 'text' | 'url' | 'clipboard' | 'voice' | 'image';
+  type: 'text' | 'clipboard' | 'voice' | 'image';
   content: string;
   timestamp: Date;
   metadata?: any;
@@ -51,17 +51,10 @@ export class DeveloperMode {
 
   private initMockMessages() {
     this.mockMessages = [
-      {
-        id: 'msg-001',
+      {        id: 'msg-001',
         type: 'text',
         content: '這是一條測試文字訊息！歡迎使用 FastTransfer 開發者模式。',
         timestamp: new Date(Date.now() - 300000), // 5分鐘前
-      },
-      {
-        id: 'msg-002',
-        type: 'url',
-        content: 'https://github.com/example/fastransfer',
-        timestamp: new Date(Date.now() - 240000), // 4分鐘前
       },
       {
         id: 'msg-003',
@@ -89,12 +82,10 @@ export class DeveloperMode {
       console.log('🛠️ 密碼正確，正在啟用開發者模式...');
       this.enableDeveloperMode();
       return true;
-    };
-
-    // 添加直接連接本地後端的選項
+    };    // 添加直接連接本地後端的選項
     (window as any).ConnectLocal = () => {
-      console.log('🔌 切換到本地後端模式...');
-      localStorage.setItem('fastransfer_use_local', 'true');
+      console.log('☁️ 強制使用雲端後端模式...');
+      localStorage.removeItem('fastransfer_use_local');
       localStorage.removeItem('fastransfer_dev_mode');
       location.reload();
       return true;
@@ -102,7 +93,7 @@ export class DeveloperMode {
 
     // 添加切換回雲端後端的選項
     (window as any).ConnectCloud = () => {
-      console.log('☁️ 切換到雲端後端模式...');
+      console.log('☁️ 強制使用雲端後端模式...');
       localStorage.removeItem('fastransfer_use_local');
       localStorage.removeItem('fastransfer_dev_mode');
       location.reload();
@@ -219,9 +210,8 @@ export class DeveloperMode {
                     class="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all transform hover:scale-105 ${localStorage.getItem('fastransfer_use_local') !== 'true' ? 'bg-primary-600 text-white shadow-lg' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}">
               ☁️ 雲端後端
             </button>
-          </div>
-          <div class="text-xs text-center text-green-700">
-            ${localStorage.getItem('fastransfer_use_local') === 'true' ? '🔌 localhost:3001' : '☁️ Railway 雲端服務'}
+          </div>          <div class="text-xs text-center text-green-700">
+            ☁️ Railway 雲端服務 (固定)
           </div>
         </div>
 
@@ -478,8 +468,7 @@ export class DeveloperMode {
 
   addMockMessage() {
     const messageTypes = [
-      { type: 'text', content: '這是一條新的測試訊息！' },
-      { type: 'url', content: 'https://example.com/new-link' },
+      { type: 'text', content: '這是一條新的測試訊息！' },      { type: 'text', content: '隨機測試訊息: ' + Math.random().toString(36).substring(7) },
       { type: 'clipboard', content: '新的剪貼簿內容:\n密碼: newpass123' },
     ];
     
@@ -513,11 +502,10 @@ export class DeveloperMode {
   exportMockData() {
     const data = {
       room: this.mockData,
-      messages: this.mockMessages,
-      settings: {
+      messages: this.mockMessages,      settings: {
         isHost: this.isHost,
         debugLogs: this.debugLogs,
-        useLocal: localStorage.getItem('fastransfer_use_local') === 'true'
+        useLocal: false  // 強制雲端
       },
       exportedAt: new Date().toISOString()
     };

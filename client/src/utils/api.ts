@@ -1,13 +1,8 @@
 import axios from 'axios';
 import { DeveloperMode } from './developerMode';
 
-// 根據設置決定使用本地還是雲端後端
-const getApiBaseUrl = () => {
-  if (localStorage.getItem('fastransfer_use_local') === 'true') {
-    return 'http://localhost:3001';
-  }
-  return 'https://fasttransfer-production.up.railway.app';
-};
+// 只用雲端 API
+const getApiBaseUrl = () => 'https://fasttransfer-production.up.railway.app';
 
 // 初始化開發者模式
 const devMode = DeveloperMode.getInstance();
@@ -18,8 +13,7 @@ if (devMode.isEnabled()) {
   console.log('Environment:', import.meta.env.MODE);
   console.log('API_BASE_URL:', getApiBaseUrl());
   console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL);
-  console.log('Developer Mode:', devMode.isEnabled() ? '🛠️ ENABLED' : '❌ DISABLED');
-  console.log('Local Backend:', localStorage.getItem('fastransfer_use_local') === 'true' ? '🔌 ENABLED' : '☁️ DISABLED');
+  console.log('Developer Mode:', devMode.isEnabled() ? '🛠️ ENABLED' : '❌ DISABLED');  console.log('Local Backend:', '☁️ DISABLED (Force Cloud)');
 }
 
 export const api = axios.create({
@@ -125,4 +119,25 @@ export const apiWrapper = {
   }
 };
 
-export default apiWrapper;
+// 臨時解決 CORS 問題的 wrapper
+const apiWithFallback = {
+  ...api,
+  async request(config: any) {
+    try {
+      return await api.request(config);
+    } catch (error: any) {
+      if (error.code === 'ERR_NETWORK' && window.location.hostname === 'localhost') {
+        // 本地開發時 CORS 問題，直接使用 fetch 嘗試
+        const response = await fetch(`https://fasttransfer-production.up.railway.app${config.url}`, {
+          method: config.method || 'GET',
+          headers: config.headers,
+          body: config.data ? JSON.stringify(config.data) : undefined,
+        });
+        return { data: await response.json() };
+      }
+      throw error;
+    }
+  }
+};
+
+export default apiWithFallback;

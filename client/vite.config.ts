@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'https://fasttransfer-production.up.railway.app',
         changeOrigin: true
       }
     }
@@ -16,7 +16,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets'
-  },  define: {
+  },
+  define: {
     'import.meta.env.VITE_API_URL': JSON.stringify(
       'https://fasttransfer-production.up.railway.app'
     )

@@ -15,13 +15,10 @@ class SocketService {
     if (this.socket && this.socket.connected) {
       return this.socket;
     }
-    
-    // 先斷開舊連接
+      // 先斷開舊連接
     this.disconnect();
-      // 根據設置決定連接本地還是雲端後端
-    const serverUrl = localStorage.getItem('fastransfer_use_local') === 'true' 
-      ? 'http://localhost:3001' 
-      : 'https://fasttransfer-production.up.railway.app';
+    // 固定連接雲端後端
+    const serverUrl = 'https://fasttransfer-production.up.railway.app';
     if (this.devMode.isEnabled()) {
       console.log('🔌 Socket connecting to:', serverUrl);
     }

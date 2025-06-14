@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { MessageSquare, Link, Clipboard, Mic, Send, Sparkles } from 'lucide-react';
+import { MessageSquare, Clipboard, Mic, Send, Sparkles } from 'lucide-react';
 import { ShareMessage } from '../types';
 
 interface QuickShareProps {
@@ -9,9 +9,8 @@ interface QuickShareProps {
 }
 
 const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
-  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'clipboard' | 'voice'>('text');
+  const [activeTab, setActiveTab] = useState<'text' | 'clipboard' | 'voice'>('text');
   const [textInput, setTextInput] = useState('');
-  const [urlInput, setUrlInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
@@ -27,31 +26,10 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
       timestamp: new Date()
     };
     
-    onMessageSent(message);
-    setTextInput('');
+    onMessageSent(message);    setTextInput('');
     toast.success(`文字訊息已發送到房間 ${roomId}`);
   };
 
-  const sendUrlMessage = async () => {
-    if (!urlInput.trim()) return;
-    
-    let formattedUrl = urlInput;
-    if (!urlInput.startsWith('http://') && !urlInput.startsWith('https://')) {
-      formattedUrl = 'https://' + urlInput;
-    }
-    
-    const message: ShareMessage = {
-      id: generateId(),
-      type: 'url',
-      content: formattedUrl,
-      metadata: { title: urlInput },
-      timestamp: new Date()
-    };
-    
-    onMessageSent(message);
-    setUrlInput('');
-    toast.success('網址已分享到房間');
-  };
   const shareClipboard = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -122,20 +100,18 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
       setMediaRecorder(null);
     }
   };
-
   const tabs = [
     { id: 'text', label: '文字', icon: MessageSquare },
-    { id: 'url', label: '網址', icon: Link },
     { id: 'clipboard', label: '剪貼簿', icon: Clipboard },
     { id: 'voice', label: '語音', icon: Mic }
-  ];  return (
+  ];return (
     <div className="card flex flex-col">
       <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gradient-text">
         <Sparkles className="w-6 h-6 mr-3" />
         快速分享
       </h2>      
       <div className="mb-6">
-        <div className="grid grid-cols-2 gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+        <div className="grid grid-cols-3 gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -189,39 +165,9 @@ const QuickShare: React.FC<QuickShareProps> = ({ roomId, onMessageSent }) => {
             >
               <Send className="w-4 h-4 mr-2" />
               發送文字訊息
-            </button>
-          </div>
-        )}        {activeTab === 'url' && (
-          <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-5 border border-green-200 shadow-sm space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Link className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 text-sm">網址連結分享</h3>
-                <p className="text-sm text-gray-600">將網址連結即時分享到房間</p>
-              </div>
-            </div>
-            
-            <div>
-              <input
-                type="url"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                placeholder="https://example.com 或 example.com"
-                className="w-full p-4 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 bg-white/90 backdrop-blur-sm text-sm shadow-sm"
-              />
-            </div>
-            
-            <button
-              onClick={sendUrlMessage}
-              disabled={!urlInput.trim()}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-300 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105 disabled:transform-none disabled:shadow-none text-sm"            >
-              <Link className="w-4 h-4 mr-2" />
-              分享網址連結
-            </button>
-          </div>
-        )}        {activeTab === 'clipboard' && (
+            </button>          </div>
+        )}
+        {activeTab === 'clipboard' && (
           <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-5 border border-purple-200 shadow-sm space-y-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">

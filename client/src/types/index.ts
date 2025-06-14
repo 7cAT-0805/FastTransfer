@@ -21,12 +21,11 @@ export interface FileInfo {
 // 新增分享訊息類型
 export interface ShareMessage {
   id: string;
-  type: 'text' | 'url' | 'clipboard' | 'voice' | 'image';
+  type: 'text' | 'clipboard' | 'voice' | 'image';
   content: string;
   metadata?: {
     duration?: number; // 語音長度
     size?: number;     // 檔案大小
-    title?: string;    // 網址標題
     fileName?: string; // 原始檔名
   };
   senderName?: string;
