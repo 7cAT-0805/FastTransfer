@@ -267,60 +267,56 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
       </div>        {/* 全螢幕語音與文字預覽模態框 */}
       {previewModal && (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center transition-all duration-300">
-          {/* 文字預覽 - 居中卡片 */}
+          {/* 文字預覽 - 全螢幕覆蓋 */}
           {previewModal.type === 'text' && (
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl max-h-[90vh] overflow-hidden w-full mx-4 transform transition-all duration-300 scale-100">
-              {/* 標題欄 */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-white" />
-                  </div>
-                  <span>文字內容預覽</span>
-                </h3>
-                <button
-                  onClick={() => setPreviewModal(null)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 group"
-                >
-                  <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
-                </button>
-              </div>
+            <div className="w-full h-full flex flex-col items-center justify-center p-8 text-white">
+              {/* 關閉按鈕 */}
+              <button
+                onClick={() => setPreviewModal(null)}
+                className="absolute top-8 right-8 p-3 hover:bg-white hover:bg-opacity-20 rounded-full transition-all duration-200 group z-10"
+              >
+                <X className="w-8 h-8 text-white group-hover:text-gray-200" />
+              </button>
 
-              {/* 內容區域 */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
-                <div className="space-y-4">
-                  <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-6 border border-blue-200 shadow-sm">
-                    <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-100">
-                      <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                        <pre className="whitespace-pre-wrap break-words text-gray-800 leading-relaxed font-mono text-sm">
+              {/* 文字內容區域 */}
+              <div className="flex flex-col items-center justify-center space-y-8 max-w-4xl w-full">
+                {/* 文字圖示 */}
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-2xl">
+                  <FileText className="w-16 h-16 text-white" />
+                </div>
+
+                {/* 文字標題 */}
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold mb-2">文字內容</h2>
+                  <p className="text-xl text-gray-300">分享的文字訊息</p>
+                </div>
+
+                {/* 文字內容卡片 */}
+                <div className="w-full bg-white bg-opacity-95 backdrop-blur-lg rounded-3xl border border-white border-opacity-30 shadow-2xl p-8 max-h-[60vh] overflow-hidden">
+                  <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-6 border border-blue-200 shadow-sm max-h-full overflow-hidden">
+                    <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-100 max-h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      <pre className="whitespace-pre-wrap break-words text-gray-800 leading-relaxed font-mono text-sm">
 {previewModal.content}
-                        </pre>
-                      </div>
+                      </pre>
                     </div>
                   </div>
-                  
-                  {/* 操作按鈕 */}
-                  <div className="flex justify-center space-x-3">
-                    <button
-                      onClick={() => copyToClipboard(previewModal.content)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium shadow-md transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
-                    >
-                      <Copy className="w-5 h-5" />
-                      <span>複製文字</span>
-                    </button>
-                    <button
-                      onClick={() => setPreviewModal(null)}
-                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-200"
-                    >
-                      <span>關閉</span>
-                    </button>
-                  </div>
+                </div>
+
+                {/* 控制按鈕 */}
+                <div className="flex items-center space-x-6">
+                  <button
+                    onClick={() => copyToClipboard(previewModal.content)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 font-bold text-lg transition-all duration-300 shadow-xl transform hover:scale-105"
+                  >
+                    <Copy className="w-6 h-6" />
+                    <span>複製</span>
+                  </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 語音預覽 - 全螢幕覆蓋 */}
+          {/* 語音預覽 - 全螢幕覆蓋，加圓邊邊框 */}
           {previewModal.type === 'voice' && (
             <div className="w-full h-full flex flex-col items-center justify-center p-8 text-white">
               {/* 關閉按鈕 */}
@@ -331,8 +327,8 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                 <X className="w-8 h-8 text-white group-hover:text-gray-200" />
               </button>
 
-              {/* 語音播放區域 */}
-              <div className="flex flex-col items-center justify-center space-y-8 max-w-2xl w-full">
+              {/* 語音播放區域 - 加上圓邊邊框 */}
+              <div className="flex flex-col items-center justify-center space-y-8 max-w-2xl w-full bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl border border-white border-opacity-30 shadow-2xl p-12">
                 {/* 語音圖示 */}
                 <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500 ${
                   playingId === previewModal.id 
@@ -374,10 +370,15 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                   </div>
                 )}
 
-                {/* 時間顯示 */}
+                {/* 時間顯示 - 修正 Infinity 問題 */}
                 <div className="text-center">
                   <span className="text-2xl font-mono font-bold text-gray-200">
-                    {Math.floor(audioProgress[previewModal.id] || 0)}s / {Math.floor(audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 0)}s
+                    {Math.floor(audioProgress[previewModal.id] || 0)}s / {
+                      (() => {
+                        const duration = audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 0;
+                        return isFinite(duration) && duration > 0 ? Math.floor(duration) : '?';
+                      })()
+                    }s
                   </span>
                 </div>
 
