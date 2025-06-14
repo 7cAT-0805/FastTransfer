@@ -329,17 +329,19 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
             <div className="p-6">              {/* 圖片預覽（訊息或檔案） */}
               {(previewModal.type === 'image' || previewModal.type === 'file-image') && (
                 <img 
-                  src={previewModal.type === 'image' ? previewModal.content : `/api/rooms/${roomId}/files/${previewModal.content.filename}`}
+                  src={previewModal.type === 'image' ? previewModal.content : `/api/rooms/${previewModal.content.id}/files/${previewModal.content.filename}`}
                   alt="圖片預覽" 
                   className="max-w-full max-h-[60vh] rounded-lg mx-auto"
+                  draggable={false}
                 />
               )}
               {/* PDF 檔案預覽 */}
               {previewModal.type === 'file-pdf' && (
                 <iframe
-                  src={`/api/rooms/${roomId}/files/${previewModal.content.filename}`}
+                  src={`/api/rooms/${previewModal.content.id}/files/${previewModal.content.filename}`}
                   title="PDF 預覽"
                   className="w-full min-h-[60vh] max-h-[80vh] rounded-lg border"
+                  allowFullScreen
                 />
               )}
               {/* 文字預覽 */}
