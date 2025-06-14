@@ -230,7 +230,7 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                                 <span>下載</span>
                               </button>
                             </>
-                          )}                          {/* 圖片：下載 */}
+                          )}                          {/* 圖片：僅下載，無預覽 */}
                           {item.type === 'message' && item.data.type === 'image' && (
                             <button
                               onClick={() => handleDownload({
@@ -246,7 +246,7 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                               <Download className="w-5 h-5" />
                               <span>下載</span>
                             </button>
-                          )}                          {/* 檔案：僅下載按鈕 */}
+                          )}{/* 檔案：僅下載按鈕 */}
                           {item.type === 'file' && (
                             <button
                               onClick={() => handleDownload(item.data)}
@@ -264,36 +264,30 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
             </div>
           </div>
         )}
-      </div>
-        {/* 美化的預覽模態框 */}
+      </div>        {/* 全螢幕語音與文字預覽模態框 */}
       {previewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl max-h-[85vh] overflow-hidden w-full transform transition-all duration-300 scale-100">
-            {/* 標題欄 */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <h3 className="text-xl font-bold text-gray-800 flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                  {previewModal.type === 'text' ? (
+        <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-md z-50 flex items-center justify-center transition-all duration-300">
+          {/* 文字預覽 - 居中卡片 */}
+          {previewModal.type === 'text' && (
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl max-h-[90vh] overflow-hidden w-full mx-4 transform transition-all duration-300 scale-100">
+              {/* 標題欄 */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
                     <FileText className="w-4 h-4 text-white" />
-                  ) : (
-                    <span className="text-white text-sm">🎵</span>
-                  )}
-                </div>
-                <span>
-                  {previewModal.type === 'text' ? '文字內容預覽' : '語音訊息預覽'}
-                </span>
-              </h3>
-              <button
-                onClick={() => setPreviewModal(null)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 group"
-              >
-                <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
-              </button>
-            </div>
+                  </div>
+                  <span>文字內容預覽</span>
+                </h3>
+                <button
+                  onClick={() => setPreviewModal(null)}
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 group"
+                >
+                  <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
+                </button>
+              </div>
 
-            {/* 內容區域 */}
-            <div className="p-6 overflow-y-auto max-h-[calc(85vh-80px)]">              {/* 美化的文字預覽 */}
-              {previewModal.type === 'text' && (
+              {/* 內容區域 */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
                 <div className="space-y-4">
                   <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-6 border border-blue-200 shadow-sm">
                     <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-100">
@@ -322,90 +316,95 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                     </button>
                   </div>
                 </div>
-              )}
-                {/* 美化的語音預覽 */}
-              {previewModal.type === 'voice' && (
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 rounded-2xl p-8 border border-purple-200 shadow-sm">
-                    {/* 語音圖示區域 */}
-                    <div className="text-center mb-6">
-                      <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-300 ${
-                        playingId === previewModal.id 
-                          ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg scale-110' 
-                          : 'bg-gradient-to-br from-purple-200 to-pink-200 hover:scale-105'
-                      }`}>
-                        <span className="text-2xl">
-                          {playingId === previewModal.id ? '🎵' : '🎤'}
-                        </span>
-                      </div>
-                      <p className="text-purple-700 font-medium mt-3">
-                        {playingId === previewModal.id ? '正在播放中...' : '點擊播放語音'}
-                      </p>
-                    </div>
-                    
-                    {/* 音訊控制器 */}
-                    <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-100">
-                      <audio
-                        ref={el => (audioRefs.current[previewModal.id] = el)}
-                        src={previewModal.content.content}
-                        preload="auto"
-                        onTimeUpdate={() => handleAudioTimeUpdate(previewModal.id)}
-                        onLoadedMetadata={() => handleAudioLoaded(previewModal.id)}
-                        className="w-full mb-4 rounded-lg"
-                        controls
-                      />
-                      
-                      {/* 播放進度資訊 */}
-                      <div className="bg-gray-50 rounded-xl p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-gray-600">播放進度</span>
-                          <span className="font-mono text-sm text-purple-600 font-semibold">
-                            {Math.floor(audioProgress[previewModal.id] || 0)}s / {Math.floor(audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 0)}s
-                          </span>
-                        </div>
-                        {(audioDuration[previewModal.id] || previewModal.content.metadata?.duration) && (
-                          <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
-                            <div 
-                              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-200 shadow-sm"
-                              style={{ 
-                                width: `${((audioProgress[previewModal.id] || 0) / (audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 1)) * 100}%` 
-                              }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* 操作按鈕 */}
-                  <div className="flex justify-center space-x-3">
-                    <button
-                      onClick={() => handleVoicePlay(previewModal.id)}
-                      className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
-                        playingId === previewModal.id 
-                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white' 
-                          : 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700'
-                      }`}
-                    >
-                      {playingId === previewModal.id ? '⏸️ 暫停播放' : '▶️ 開始播放'}
-                    </button>
-                    <button
-                      onClick={() => handleVoiceDownload(previewModal.content)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium shadow-md transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
-                    >
-                      <Download className="w-5 h-5" />
-                      <span>下載</span>
-                    </button>
-                    <button
-                      onClick={() => setPreviewModal(null)}
-                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-200"
-                    >
-                      <span>關閉</span>
-                    </button>
-                  </div>
+              </div>
+            </div>
+          )}
+
+          {/* 語音預覽 - 全螢幕覆蓋 */}
+          {previewModal.type === 'voice' && (
+            <div className="w-full h-full flex flex-col items-center justify-center p-8 text-white">
+              {/* 關閉按鈕 */}
+              <button
+                onClick={() => setPreviewModal(null)}
+                className="absolute top-8 right-8 p-3 hover:bg-white hover:bg-opacity-20 rounded-full transition-all duration-200 group z-10"
+              >
+                <X className="w-8 h-8 text-white group-hover:text-gray-200" />
+              </button>
+
+              {/* 語音播放區域 */}
+              <div className="flex flex-col items-center justify-center space-y-8 max-w-2xl w-full">
+                {/* 語音圖示 */}
+                <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500 ${
+                  playingId === previewModal.id 
+                    ? 'bg-gradient-to-br from-purple-400 to-pink-400 shadow-2xl scale-110 animate-pulse' 
+                    : 'bg-gradient-to-br from-purple-500 to-pink-500 hover:scale-105 shadow-xl'
+                }`}>
+                  <span className="text-6xl">
+                    {playingId === previewModal.id ? '🎵' : '🎤'}
+                  </span>
                 </div>
-              )}            </div>
-          </div>
+
+                {/* 語音標題 */}
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold mb-2">語音訊息</h2>
+                  <p className="text-xl text-gray-300">
+                    {playingId === previewModal.id ? '正在播放中...' : '點擊下方按鈕開始播放'}
+                  </p>
+                </div>
+
+                {/* 隱藏的音頻元素 */}
+                <audio
+                  ref={el => (audioRefs.current[previewModal.id] = el)}
+                  src={previewModal.content.content}
+                  preload="auto"
+                  onTimeUpdate={() => handleAudioTimeUpdate(previewModal.id)}
+                  onLoadedMetadata={() => handleAudioLoaded(previewModal.id)}
+                  style={{ display: 'none' }}
+                />
+
+                {/* 播放進度條 */}
+                {(audioDuration[previewModal.id] || previewModal.content.metadata?.duration) && (
+                  <div className="w-full bg-white bg-opacity-20 rounded-full h-4 shadow-inner backdrop-blur-sm">
+                    <div 
+                      className="bg-gradient-to-r from-purple-300 to-pink-300 h-4 rounded-full transition-all duration-200 shadow-lg"
+                      style={{ 
+                        width: `${((audioProgress[previewModal.id] || 0) / (audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 1)) * 100}%` 
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* 時間顯示 */}
+                <div className="text-center">
+                  <span className="text-2xl font-mono font-bold text-gray-200">
+                    {Math.floor(audioProgress[previewModal.id] || 0)}s / {Math.floor(audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 0)}s
+                  </span>
+                </div>
+
+                {/* 控制按鈕 */}
+                <div className="flex items-center space-x-6">
+                  <button
+                    onClick={() => handleVoicePlay(previewModal.id)}
+                    className={`px-8 py-4 rounded-2xl font-bold text-xl transition-all duration-300 shadow-xl transform hover:scale-105 ${
+                      playingId === previewModal.id 
+                        ? 'bg-white text-purple-600 hover:bg-gray-100' 
+                        : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
+                    }`}
+                  >
+                    {playingId === previewModal.id ? '⏸️ 暫停' : '▶️ 播放'}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleVoiceDownload(previewModal.content)}
+                    className="bg-white bg-opacity-20 backdrop-blur-sm hover:bg-opacity-30 text-white px-6 py-4 rounded-2xl flex items-center space-x-3 font-medium transition-all duration-300 shadow-lg transform hover:scale-105"
+                  >
+                    <Download className="w-6 h-6" />
+                    <span className="text-lg">下載</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
