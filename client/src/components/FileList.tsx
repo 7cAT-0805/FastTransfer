@@ -100,8 +100,21 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
     if (audio) {
       setAudioDuration(prev => ({ ...prev, [id]: audio.duration }));
     }
+  };  // 判斷檔案是否可預覽
+  const canPreview = (item: any) => {
+    if (item.type === 'message') {
+      return ['text', 'image', 'voice'].includes(item.data.type);
+    } else if (item.type === 'file') {
+      const mimetype = item.data.mimetype;
+      return mimetype.startsWith('text/') || 
+             mimetype === 'application/json' ||
+             mimetype.startsWith('image/') ||
+             mimetype === 'application/pdf';
+    }
+    return false;
   };
-  // 預覽圖片/文字/語音
+
+  // 預覽圖片/文字/語音/PDF
   const handlePreview = (item: any) => {
     const id = item.type === 'file' ? item.data.id : item.data.id;
     if (item.type === 'message' && item.data.type === 'text') {
@@ -110,8 +123,17 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
       setPreviewModal({ type: 'image', content: item.data.content, id });
     } else if (item.type === 'message' && item.data.type === 'voice') {
       setPreviewModal({ type: 'voice', content: item.data, id });
-    } else if (item.type === 'file' && (item.data.mimetype.startsWith('text/') || item.data.mimetype === 'application/json')) {
-      setPreviewModal({ type: 'file', content: item.data, id });
+    } else if (item.type === 'file') {
+      const mimetype = item.data.mimetype;
+      if (mimetype.startsWith('text/') || mimetype === 'application/json') {
+        setPreviewModal({ type: 'file-text', content: item.data, id });
+      } else if (mimetype.startsWith('image/')) {
+        setPreviewModal({ type: 'file-image', content: item.data, id });
+      } else if (mimetype === 'application/pdf') {
+        setPreviewModal({ type: 'file-pdf', content: item.data, id });
+      } else {
+        setPreviewModal({ type: 'unsupported', content: item.data, id });
+      }
     }
   };
 
@@ -260,11 +282,10 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                                 <span>下載</span>
                               </button>
                             </>
-                          )}
-                          {/* 檔案：預覽與下載（僅支援文字檔預覽） */}
+                          )}                          {/* 檔案：預覽與下載 */}
                           {item.type === 'file' && (
                             <>
-                              {(item.data.mimetype.startsWith('text/') || item.data.mimetype === 'application/json') && (
+                              {canPreview(item) && (
                                 <button
                                   onClick={() => handlePreview(item)}
                                   className="bg-gray-200 hover:bg-gray-300 text-blue-600 px-4 py-3 rounded-xl flex items-center space-x-2 font-medium"
@@ -305,19 +326,18 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6">
-              {/* 圖片預覽（訊息或檔案） */}
-              {(previewModal.type === 'image' || (previewModal.type === 'file' && previewModal.content.mimetype && previewModal.content.mimetype.startsWith('image/'))) && (
+            <div className="p-6">              {/* 圖片預覽（訊息或檔案） */}
+              {(previewModal.type === 'image' || previewModal.type === 'file-image') && (
                 <img 
-                  src={previewModal.type === 'image' ? previewModal.content : `/api/rooms/${previewModal.content.id}/files/${previewModal.content.filename}`}
+                  src={previewModal.type === 'image' ? previewModal.content : `/api/rooms/${roomId}/files/${previewModal.content.filename}`}
                   alt="圖片預覽" 
                   className="max-w-full max-h-[60vh] rounded-lg mx-auto"
                 />
               )}
               {/* PDF 檔案預覽 */}
-              {previewModal.type === 'file' && previewModal.content.mimetype === 'application/pdf' && (
+              {previewModal.type === 'file-pdf' && (
                 <iframe
-                  src={`/api/rooms/${previewModal.content.id}/files/${previewModal.content.filename}`}
+                  src={`/api/rooms/${roomId}/files/${previewModal.content.filename}`}
                   title="PDF 預覽"
                   className="w-full min-h-[60vh] max-h-[80vh] rounded-lg border"
                 />
@@ -354,8 +374,21 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                 </div>
               )}
               {/* 文字檔案預覽 */}
-              {previewModal.type === 'file' && (previewModal.content.mimetype.startsWith('text/') || previewModal.content.mimetype === 'application/json') && (
+              {previewModal.type === 'file-text' && (
                 <FilePreview file={previewModal.content} />
+              )}
+              {/* 不支援預覽 */}
+              {previewModal.type === 'unsupported' && (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📄</div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">無法預覽此檔案</h3>
+                  <p className="text-gray-500 mb-4">
+                    檔案類型：{previewModal.content.mimetype || '未知'}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    請下載檔案以查看內容
+                  </p>
+                </div>
               )}
             </div>
           </div>
