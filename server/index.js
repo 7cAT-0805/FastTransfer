@@ -36,6 +36,8 @@ app.use(compression());
 const corsOptions = {
   origin: [
     process.env.CORS_ORIGIN || "http://localhost:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173", 
     "https://fasttransfer.netlify.app",
     "https://684a2ed84e42030008d66d5e--fasttransfer.netlify.app" // Netlify 預覽 URL
   ],
@@ -75,6 +77,10 @@ const upload = multer({
 });
 
 // API路由
+app.get('/api', (req, res) => {
+  res.json({ status: 'FastTransfer API', version: '1.0.0', timestamp: new Date().toISOString() });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });

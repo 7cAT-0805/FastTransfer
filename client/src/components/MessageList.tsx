@@ -49,18 +49,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, className = '' }) =
       audio.play().catch(() => {
         toast.error('播放失敗');
         setPlayingAudio(null);
-      });
-        audio.onended = () => setPlayingAudio(null);
-    }
-  };
-
-  const getMessageTitle = (type: ShareMessage['type']) => {
-    switch (type) {
-      case 'text': return '文字訊息';
-      case 'clipboard': return '剪貼簿內容';
-      case 'image': return '照片分享';
-      case 'voice': return '語音訊息';
-      default: return '訊息';
+      });      audio.onended = () => setPlayingAudio(null);
     }
   };
 
