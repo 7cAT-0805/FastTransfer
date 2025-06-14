@@ -99,41 +99,15 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
     const audio = audioRefs.current[id];
     if (audio) {
       setAudioDuration(prev => ({ ...prev, [id]: audio.duration }));
-    }
-  };  // 判斷檔案是否可預覽
-  const canPreview = (item: any) => {
-    if (item.type === 'message') {
-      return ['text', 'image', 'voice'].includes(item.data.type);
-    } else if (item.type === 'file') {
-      const mimetype = item.data.mimetype;
-      return mimetype.startsWith('text/') || 
-             mimetype === 'application/json' ||
-             mimetype.startsWith('image/') ||
-             mimetype === 'application/pdf';
-    }
-    return false;
-  };
+    }  };
 
-  // 預覽圖片/文字/語音/PDF
+  // 預覽文字/語音 - 僅支援這兩種類型
   const handlePreview = (item: any) => {
     const id = item.type === 'file' ? item.data.id : item.data.id;
     if (item.type === 'message' && item.data.type === 'text') {
       setPreviewModal({ type: 'text', content: item.data.content, id });
-    } else if (item.type === 'message' && item.data.type === 'image') {
-      setPreviewModal({ type: 'image', content: item.data.content, id });
     } else if (item.type === 'message' && item.data.type === 'voice') {
       setPreviewModal({ type: 'voice', content: item.data, id });
-    } else if (item.type === 'file') {
-      const mimetype = item.data.mimetype;
-      if (mimetype.startsWith('text/') || mimetype === 'application/json') {
-        setPreviewModal({ type: 'file-text', content: item.data, id });
-      } else if (mimetype.startsWith('image/')) {
-        setPreviewModal({ type: 'file-image', content: item.data, id });
-      } else if (mimetype === 'application/pdf') {
-        setPreviewModal({ type: 'file-pdf', content: item.data, id });
-      } else {
-        setPreviewModal({ type: 'unsupported', content: item.data, id });
-      }
     }
   };
 
@@ -256,53 +230,32 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
                                 <span>下載</span>
                               </button>
                             </>
-                          )}
-                          {/* 圖片：預覽與下載 */}
+                          )}                          {/* 圖片：下載 */}
                           {item.type === 'message' && item.data.type === 'image' && (
-                            <>
-                              <button
-                                onClick={() => handlePreview(item)}
-                                className="bg-gray-200 hover:bg-gray-300 text-blue-600 px-4 py-3 rounded-xl flex items-center space-x-2 font-medium"
-                              >
-                                <Eye className="w-5 h-5" />
-                                <span>預覽</span>
-                              </button>
-                              <button
-                                onClick={() => handleDownload({
-                                  id: 'image-' + Date.now(),
-                                  filename: item.data.content,
-                                  originalName: item.data.metadata?.fileName || '照片.jpg',
-                                  size: item.data.metadata?.size || 0,
-                                  uploadedAt: item.data.timestamp,
-                                  mimetype: 'image/jpeg',
-                                })}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium"
-                              >
-                                <Download className="w-5 h-5" />
-                                <span>下載</span>
-                              </button>
-                            </>
-                          )}                          {/* 檔案：預覽與下載 */}
+                            <button
+                              onClick={() => handleDownload({
+                                id: 'image-' + Date.now(),
+                                filename: item.data.content,
+                                originalName: item.data.metadata?.fileName || '照片.jpg',
+                                size: item.data.metadata?.size || 0,
+                                uploadedAt: item.data.timestamp,
+                                mimetype: 'image/jpeg',
+                              })}
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium"
+                            >
+                              <Download className="w-5 h-5" />
+                              <span>下載</span>
+                            </button>
+                          )}                          {/* 檔案：僅下載按鈕 */}
                           {item.type === 'file' && (
-                            <>
-                              {canPreview(item) && (
-                                <button
-                                  onClick={() => handlePreview(item)}
-                                  className="bg-gray-200 hover:bg-gray-300 text-blue-600 px-4 py-3 rounded-xl flex items-center space-x-2 font-medium"
-                                >
-                                  <Eye className="w-5 h-5" />
-                                  <span>預覽</span>
-                                </button>
-                              )}
-                              <button
-                                onClick={() => handleDownload(item.data)}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium"
-                              >
-                                <Download className="w-5 h-5" />
-                                <span>下載</span>
-                              </button>
-                            </>
-                          )}                        </div>
+                            <button
+                              onClick={() => handleDownload(item.data)}
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium"
+                            >
+                              <Download className="w-5 h-5" />
+                              <span>下載</span>
+                            </button>
+                          )}</div>
                       </div>
                     </div>
                   </div>
@@ -312,104 +265,151 @@ const FileList: React.FC<FileListProps> = ({ files, messages, roomId }) => {
           </div>
         )}
       </div>
-      
-      {/* 浮動預覽模態框 */}
+        {/* 美化的預覽模態框 */}
       {previewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-4xl max-h-[80vh] overflow-auto w-full">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-semibold">內容預覽</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl max-h-[85vh] overflow-hidden w-full transform transition-all duration-300 scale-100">
+            {/* 標題欄 */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  {previewModal.type === 'text' ? (
+                    <FileText className="w-4 h-4 text-white" />
+                  ) : (
+                    <span className="text-white text-sm">🎵</span>
+                  )}
+                </div>
+                <span>
+                  {previewModal.type === 'text' ? '文字內容預覽' : '語音訊息預覽'}
+                </span>
+              </h3>
               <button
                 onClick={() => setPreviewModal(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 group"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6 text-gray-500 group-hover:text-gray-700" />
               </button>
             </div>
-            <div className="p-6">              {/* 圖片預覽（訊息或檔案） */}
-              {(previewModal.type === 'image' || previewModal.type === 'file-image') && (
-                <img 
-                  src={previewModal.type === 'image' ? previewModal.content : `/api/rooms/${previewModal.content.id}/files/${previewModal.content.filename}`}
-                  alt="圖片預覽" 
-                  className="max-w-full max-h-[60vh] rounded-lg mx-auto"
-                  draggable={false}
-                />
-              )}
-              {/* PDF 檔案預覽 */}
-              {previewModal.type === 'file-pdf' && (
-                <iframe
-                  src={`/api/rooms/${previewModal.content.id}/files/${previewModal.content.filename}`}
-                  title="PDF 預覽"
-                  className="w-full min-h-[60vh] max-h-[80vh] rounded-lg border"
-                  allowFullScreen
-                />
-              )}
-              {/* 文字預覽 */}
+
+            {/* 內容區域 */}
+            <div className="p-6 overflow-y-auto max-h-[calc(85vh-80px)]">              {/* 美化的文字預覽 */}
               {previewModal.type === 'text' && (
-                <pre className="whitespace-pre-wrap break-all text-gray-800 bg-gray-50 p-4 rounded-lg">
-                  {previewModal.content}
-                </pre>
-              )}
-              {/* 語音預覽 */}
-              {previewModal.type === 'voice' && (
-                <div className="text-center">
-                  <audio
-                    ref={el => (audioRefs.current[previewModal.id] = el)}
-                    src={previewModal.content.content}
-                    preload="auto"
-                    onTimeUpdate={() => handleAudioTimeUpdate(previewModal.id)}
-                    onLoadedMetadata={() => handleAudioLoaded(previewModal.id)}
-                    controls
-                    className="mb-4"
-                  />
-                  <div className="flex items-center justify-center space-x-4">
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-6 border border-blue-200 shadow-sm">
+                    <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-100">
+                      <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                        <pre className="whitespace-pre-wrap break-words text-gray-800 leading-relaxed font-mono text-sm">
+{previewModal.content}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 操作按鈕 */}
+                  <div className="flex justify-center space-x-3">
                     <button
-                      onClick={() => handleVoicePlay(previewModal.id)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg"
+                      onClick={() => copyToClipboard(previewModal.content)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium shadow-md transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
                     >
-                      {playingId === previewModal.id ? '暫停' : '播放'}
+                      <Copy className="w-5 h-5" />
+                      <span>複製文字</span>
                     </button>
-                    <span className="text-gray-700">
-                      {Math.floor(audioProgress[previewModal.id] || 0)} / {Math.floor(audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 0)} 秒
-                    </span>
+                    <button
+                      onClick={() => setPreviewModal(null)}
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-200"
+                    >
+                      <span>關閉</span>
+                    </button>
                   </div>
                 </div>
               )}
-              {/* 文字檔案預覽 */}
-              {previewModal.type === 'file-text' && (
-                <FilePreview file={previewModal.content} />
-              )}
-              {/* 不支援預覽 */}
-              {previewModal.type === 'unsupported' && (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📄</div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">無法預覽此檔案</h3>
-                  <p className="text-gray-500 mb-4">
-                    檔案類型：{previewModal.content.mimetype || '未知'}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    請下載檔案以查看內容
-                  </p>
+                {/* 美化的語音預覽 */}
+              {previewModal.type === 'voice' && (
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 rounded-2xl p-8 border border-purple-200 shadow-sm">
+                    {/* 語音圖示區域 */}
+                    <div className="text-center mb-6">
+                      <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-300 ${
+                        playingId === previewModal.id 
+                          ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg scale-110' 
+                          : 'bg-gradient-to-br from-purple-200 to-pink-200 hover:scale-105'
+                      }`}>
+                        <span className="text-2xl">
+                          {playingId === previewModal.id ? '🎵' : '🎤'}
+                        </span>
+                      </div>
+                      <p className="text-purple-700 font-medium mt-3">
+                        {playingId === previewModal.id ? '正在播放中...' : '點擊播放語音'}
+                      </p>
+                    </div>
+                    
+                    {/* 音訊控制器 */}
+                    <div className="bg-white rounded-xl p-6 shadow-inner border border-gray-100">
+                      <audio
+                        ref={el => (audioRefs.current[previewModal.id] = el)}
+                        src={previewModal.content.content}
+                        preload="auto"
+                        onTimeUpdate={() => handleAudioTimeUpdate(previewModal.id)}
+                        onLoadedMetadata={() => handleAudioLoaded(previewModal.id)}
+                        className="w-full mb-4 rounded-lg"
+                        controls
+                      />
+                      
+                      {/* 播放進度資訊 */}
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-600">播放進度</span>
+                          <span className="font-mono text-sm text-purple-600 font-semibold">
+                            {Math.floor(audioProgress[previewModal.id] || 0)}s / {Math.floor(audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 0)}s
+                          </span>
+                        </div>
+                        {(audioDuration[previewModal.id] || previewModal.content.metadata?.duration) && (
+                          <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+                            <div 
+                              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-200 shadow-sm"
+                              style={{ 
+                                width: `${((audioProgress[previewModal.id] || 0) / (audioDuration[previewModal.id] || previewModal.content.metadata?.duration || 1)) * 100}%` 
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 操作按鈕 */}
+                  <div className="flex justify-center space-x-3">
+                    <button
+                      onClick={() => handleVoicePlay(previewModal.id)}
+                      className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                        playingId === previewModal.id 
+                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white' 
+                          : 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700'
+                      }`}
+                    >
+                      {playingId === previewModal.id ? '⏸️ 暫停播放' : '▶️ 開始播放'}
+                    </button>
+                    <button
+                      onClick={() => handleVoiceDownload(previewModal.content)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium shadow-md transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+                    >
+                      <Download className="w-5 h-5" />
+                      <span>下載</span>
+                    </button>
+                    <button
+                      onClick={() => setPreviewModal(null)}
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-200"
+                    >
+                      <span>關閉</span>
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
+              )}            </div>
           </div>
         </div>
       )}
     </div>
   );
-};
-
-// 文字檔案預覽元件
-const FilePreview: React.FC<{ file: FileInfo }> = ({ file }) => {
-  const [content, setContent] = useState<string>('');
-  React.useEffect(() => {
-    fetch(`/api/rooms/${file.id}/preview`)
-      .then(res => res.text())
-      .then(setContent)
-      .catch(() => setContent('預覽失敗'));
-  }, [file.id]);
-  return <pre className="whitespace-pre-wrap break-all text-gray-800 max-h-64 overflow-y-auto">{content}</pre>;
 };
 
 export default FileList;
