@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
 import Layout from './components/Layout'
-import TestHome from './pages/TestHome'
 import Home from './pages/Home'
 import Room from './pages/Room'
 import Privacy from './pages/Privacy'
@@ -18,11 +17,9 @@ function App() {
       console.log('🛠️ Developer Mode already enabled');
     }
   }, []);
-
   return (
     <Layout>
       <Routes>
-        <Route path="/test" element={<TestHome />} />
         <Route path="/" element={<Home />} />
         <Route path="/room/:roomId" element={<Room />} />
         <Route path="/privacy" element={<Privacy />} />

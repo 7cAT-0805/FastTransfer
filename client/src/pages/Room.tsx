@@ -13,7 +13,7 @@ import apiWrapper from '../utils/api';
 import socketService from '../utils/socket';
 import { FileInfo, ShareMessage } from '../types';
 import { copyToClipboard, generateRoomUrl } from '../utils/helpers';
-import FileList from '../components/FileList';
+import { FileList } from '../components/FileList';
 import QRCodeGenerator from '../components/QRCodeGenerator';
 import ShareAndUpload from '../components/ShareAndUpload';
 import { NetworkError, useErrorHandler } from '../components/ErrorDisplay';
